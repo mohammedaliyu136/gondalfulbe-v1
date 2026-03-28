@@ -1,0 +1,219 @@
+{{Form::model($vender,array('route' => array('vender.update', $vender->id), 'method' => 'PUT', 'class'=>'needs-validation', 'novalidate', 'enctype'=>'multipart/form-data')) }}
+<div class="modal-body">
+
+    <h5 class="sub-title mb-3">{{__('Basic Info')}}</h5>
+    <div class="row">
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <div class="form-group">
+                {{Form::label('name',__('Name'),array('class'=>'form-label')) }}<x-required></x-required>
+                {{Form::text('name',null,array('class'=>'form-control','required'=>'required', 'placeholder'=>__('Enter Name')))}}
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <div class="form-group">
+                <x-mobile label="{{__('Contact')}}" name="contact" value="{{$vender->contact}}" required placeholder="Enter Contact"></x-mobile>
+
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('tax_number',__('Tax Number'),['class'=>'form-label'])}}
+                {{Form::text('tax_number',null,array('class'=>'form-control', 'placeholder'=>__('Enter Tax Number')))}}
+
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('balance',__('Balance'),['class'=>'form-label'])}}
+                {{Form::number('balance',null,array('class'=>'form-control' , 'placeholder' => __('Enter Balance')))}}
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('cooperative_id',__('Cooperative'),['class'=>'form-label'])}}
+                {{Form::select('cooperative_id', ['' => 'Select Cooperative'] + $cooperatives, null, array('class'=>'form-control select'))}}
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('gender',__('Gender'),['class'=>'form-label'])}}
+                {{Form::select('gender', ['Male'=>'Male', 'Female'=>'Female', 'Other'=>'Other'], null, array('class'=>'form-control select'))}}
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('status',__('Status'),['class'=>'form-label'])}}
+                {{Form::select('status', ['Active'=>'Active', 'Inactive'=>'Inactive', 'Suspended'=>'Suspended'], null, array('class'=>'form-control select'))}}
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('registration_date',__('Registration Date'),['class'=>'form-label'])}}
+                {{Form::date('registration_date', null, array('class'=>'form-control', 'required'=>'required'))}}
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('dob',__('Date of Birth'),['class'=>'form-label'])}}
+                {{Form::date('dob', null, array('class'=>'form-control'))}}
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('bank_name',__('Bank Name'),['class'=>'form-label'])}}
+                {{Form::text('bank_name', null, array('class'=>'form-control', 'placeholder' => __('Enter Bank Name')))}}
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('account_number',__('Account Number'),['class'=>'form-label'])}}
+                {{Form::text('account_number', null, array('class'=>'form-control', 'placeholder' => __('Enter Account Number')))}}
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('bvn',__('BVN (Optional)'),['class'=>'form-label'])}}
+                {{Form::text('bvn', null, array('class'=>'form-control', 'placeholder' => __('Enter BVN')))}}
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('gps_coordinates',__('GPS Coordinates'),['class'=>'form-label'])}}
+                {{Form::text('gps_coordinates', null, array('class'=>'form-control', 'placeholder' => __('e.g., 9.0765, 7.3986')))}}
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('digital_payment_enabled',__('Digital Payment Enabled'),['class'=>'form-label'])}}
+                {{Form::select('digital_payment_enabled', ['1' => 'Yes', '0' => 'No'], null, array('class'=>'form-control select'))}}
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('documents',__('Add More Documents'),['class'=>'form-label'])}}
+                <input type="file" name="documents[]" class="form-control" multiple>
+            </div>
+        </div>
+        @if(!$customFields->isEmpty())
+                    @include('customFields.formBuilder')
+        @endif
+    </div>
+    <h5 class="sub-title mb-3">{{__('Billing Address')}}</h5>
+    <div class="row">
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <div class="form-group">
+                {{Form::label('billing_name',__('Name'),array('class'=>'form-label')) }}
+                {{Form::text('billing_name',null,array('class'=>'form-control', 'placeholder'=>__('Enter Name')))}}
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <div class="form-group">
+                {{Form::label('billing_phone',__('Phone'),array('class'=>'form-label')) }}
+                {{Form::text('billing_phone',null,array('class'=>'form-control', 'placeholder'=>__('Enter Phone')))}}
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                {{Form::label('billing_address',__('Address'),array('class'=>'form-label')) }}
+                {{Form::textarea('billing_address',null,array('class'=>'form-control','rows'=>3, 'placeholder'=>__('Enter Address')))}}
+            </div>
+        </div>
+
+
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <div class="form-group">
+                {{Form::label('billing_city',__('City'),array('class'=>'form-label')) }}
+                {{Form::text('billing_city',null,array('class'=>'form-control', 'placeholder'=>__('Enter City')))}}
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <div class="form-group">
+                {{Form::label('billing_state',__('State'),array('class'=>'form-label')) }}
+                {{Form::text('billing_state',null,array('class'=>'form-control', 'placeholder'=>__('Enter State')))}}
+            </div>
+        </div>
+
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <div class="form-group">
+                {{Form::label('billing_country',__('Country'),array('class'=>'form-label')) }}
+                {{Form::text('billing_country',null,array('class'=>'form-control', 'placeholder'=>__('Enter Country')))}}
+            </div>
+        </div>
+
+
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <div class="form-group">
+                {{Form::label('billing_zip',__('Zip Code'),array('class'=>'form-label')) }}
+                {{Form::text('billing_zip',null,array('class'=>'form-control', 'placeholder'=>__('Enter Zip')))}}
+            </div>
+        </div>
+
+    </div>
+
+    @if(App\Models\Utility::getValByName('shipping_display')=='on')
+        <div class="col-md-12 text-end mb-3">
+            <input type="button" id="billing_data" value="{{__('Shipping Same As Billing')}}" class="btn btn-primary">
+        </div>
+        <h5 class="sub-title mb-3">{{__('Shipping Address')}}</h5>
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-6">
+                <div class="form-group">
+                    {{Form::label('shipping_name',__('Name'),array('class'=>'form-label')) }}
+                    {{Form::text('shipping_name',null,array('class'=>'form-control', 'placeholder'=>__('Enter Name')))}}
+
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-6">
+                <div class="form-group">
+                    {{Form::label('shipping_phone',__('Phone'),array('class'=>'form-label')) }}
+                    {{Form::text('shipping_phone',null,array('class'=>'form-control', 'placeholder'=>__('Enter Phone')))}}
+
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="form-group">
+                    {{Form::label('shipping_address',__('Address'),array('class'=>'form-label')) }}
+                    {{Form::textarea('shipping_address',null,array('class'=>'form-control','rows'=>3, 'placeholder'=>__('Enter Address')))}}
+
+                </div>
+            </div>
+
+
+                <div class="col-lg-6 col-md-6 col-sm-6">
+                <div class="form-group">
+                    {{Form::label('shipping_city',__('City'),array('class'=>'form-label')) }}
+                    {{Form::text('shipping_city',null,array('class'=>'form-control', 'placeholder'=>__('Enter City')))}}
+                </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-6">
+                    <div class="form-group">
+                        {{Form::label('shipping_state',__('State'),array('class'=>'form-label')) }}
+                        {{Form::text('shipping_state',null,array('class'=>'form-control', 'placeholder'=>__('Enter State')))}}
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-6">
+                    <div class="form-group">
+                        {{Form::label('shipping_country',__('Country'),array('class'=>'form-label')) }}
+                        {{Form::text('shipping_country',null,array('class'=>'form-control', 'placeholder'=>__('Enter Country')))}}
+                    </div>
+                </div>
+
+            <div class="col-lg-6 col-md-6 col-sm-6">
+                <div class="form-group">
+                    {{Form::label('shipping_zip',__('Zip Code'),array('class'=>'form-label')) }}
+                    {{Form::text('shipping_zip',null,array('class'=>'form-control', 'placeholder'=>__('Enter Zip')))}}
+
+                </div>
+            </div>
+
+        </div>
+    @endif
+
+</div>
+
+<div class="modal-footer">
+    <input type="button" value="{{__('Cancel')}}" class="btn btn-secondary" data-bs-dismiss="modal">
+    <input type="submit" value="{{__('Update')}}" class="btn btn-primary">
+</div>
+
+{{Form::close()}}

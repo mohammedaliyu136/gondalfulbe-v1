@@ -1,0 +1,11 @@
+{
+    "name": "Cooperatives",
+    "alias": "cooperatives",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Cooperatives\\Providers\\CooperativesServiceProvider"
+    ],
+    "files": []
+}

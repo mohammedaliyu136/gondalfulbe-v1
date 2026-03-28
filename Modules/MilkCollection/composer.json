@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/milkcollection",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\MilkCollection\\": "app/",
+            "Modules\\MilkCollection\\Database\\Factories\\": "database/factories/",
+            "Modules\\MilkCollection\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\MilkCollection\\Tests\\": "tests/"
+        }
+    }
+}
