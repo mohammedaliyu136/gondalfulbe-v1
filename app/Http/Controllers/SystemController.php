@@ -19,7 +19,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
-use Symfony\Component\HttpFoundation\Response;
 
 class SystemController extends Controller
 {
@@ -195,33 +194,6 @@ class SystemController extends Controller
             return redirect()->back()->with('success', __('Setting successfully updated.'));
         } else {
             return redirect()->back()->with('error', 'Permission denied.');
-        }
-    }
-
-    public function runDeployMaintenance(): Response
-    {
-        abort_unless(\Auth::user()->can('manage system settings'), 403);
-
-        $lines = [];
-
-        try {
-            Artisan::call('migrate', ['--force' => true]);
-            $lines[] = '$ php artisan migrate --force';
-            $lines[] = trim(Artisan::output()) ?: 'Migration completed.';
-
-            Artisan::call('optimize:clear');
-            $lines[] = '';
-            $lines[] = '$ php artisan optimize:clear';
-            $lines[] = trim(Artisan::output()) ?: 'Optimize clear completed.';
-
-            return response('<pre>' . e(implode(PHP_EOL, $lines)) . '</pre>', 200)
-                ->header('Content-Type', 'text/html; charset=UTF-8');
-        } catch (\Throwable $e) {
-            $lines[] = '';
-            $lines[] = 'Error: ' . $e->getMessage();
-
-            return response('<pre>' . e(implode(PHP_EOL, $lines)) . '</pre>', 500)
-                ->header('Content-Type', 'text/html; charset=UTF-8');
         }
     }
 

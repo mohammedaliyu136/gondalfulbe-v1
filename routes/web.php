@@ -444,7 +444,6 @@ Route::group(['middleware' => ['verified', '2fa']], function () {
             Route::post('cookie-setting', [SystemController::class, 'saveCookieSettings'])->name('cookie.setting');
 
             Route::post('cache-settings', [SystemController::class, 'cacheSettingStore'])->name('cache.settings.store')->middleware(['auth', 'XSS']);
-            Route::get('deploy/maintenance', [SystemController::class, 'runDeployMaintenance'])->name('deploy.maintenance');
         }
     );
 
