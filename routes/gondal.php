@@ -30,7 +30,9 @@ Route::middleware(['auth', 'XSS', 'revalidate'])
                 Route::get('/logistics/export.csv', [GondalController::class, 'exportLogistics'])->name('logistics.export');
                 Route::post('/logistics/import', [GondalController::class, 'importLogistics'])->name('logistics.import');
                 Route::post('/logistics/trips', [GondalController::class, 'storeLogisticsTrip'])->name('logistics.trips.store');
+                Route::post('/logistics/trips/{id}/approve', [GondalController::class, 'approveLogisticsTrip'])->name('logistics.trips.approve');
                 Route::post('/logistics/riders', [GondalController::class, 'storeLogisticsRider'])->name('logistics.riders.store');
+                Route::get('/logistics/riders/{id}', [GondalController::class, 'logisticsRiderDetail'])->name('logistics.riders.show');
 
                 Route::get('/operations', [GondalController::class, 'operations'])->name('operations');
                 Route::get('/operations/export.csv', [GondalController::class, 'exportOperations'])->name('operations.export');

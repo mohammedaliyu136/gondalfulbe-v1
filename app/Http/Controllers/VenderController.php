@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Role;
@@ -94,6 +95,7 @@ class VenderController extends Controller
                         return $query->where('created_by', \Auth::user()->id);
                     })
                 ],
+                'profile_photo' => 'nullable|image|max:3072',
             ];
 
             $validator = \Validator::make($request->all(), $rules);
@@ -151,6 +153,12 @@ class VenderController extends Controller
                             $document_paths[] = $path;
                         }
                         $vender->document_paths = json_encode($document_paths);
+                    }
+
+                    if ($request->hasFile('profile_photo')) {
+                        $file = $request->file('profile_photo');
+                        $filename = 'farmer_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                        $vender->profile_photo_path = $file->storeAs('uploads/farmer_profiles', $filename, 'public');
                     }
 
                     $vender->save();
@@ -227,6 +235,7 @@ class VenderController extends Controller
             $rules = [
                 'name' => 'required',
                 'contact' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/',
+                'profile_photo' => 'nullable|image|max:3072',
             ];
 
 
@@ -275,6 +284,16 @@ class VenderController extends Controller
                     $document_paths[] = $path;
                 }
                 $vender->document_paths = json_encode($document_paths);
+            }
+
+            if ($request->hasFile('profile_photo')) {
+                if (!empty($vender->profile_photo_path) && Storage::disk('public')->exists($vender->profile_photo_path)) {
+                    Storage::disk('public')->delete($vender->profile_photo_path);
+                }
+
+                $file = $request->file('profile_photo');
+                $filename = 'farmer_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $vender->profile_photo_path = $file->storeAs('uploads/farmer_profiles', $filename, 'public');
             }
 
             $vender->save();

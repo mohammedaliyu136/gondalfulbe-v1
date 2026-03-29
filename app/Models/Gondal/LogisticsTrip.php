@@ -24,6 +24,7 @@ class LogisticsTrip extends Model
         'distance_km',
         'fuel_cost',
         'status',
+        'payment_batch_id',
     ];
 
     protected function casts(): array
@@ -44,5 +45,10 @@ class LogisticsTrip extends Model
     public function cooperative(): BelongsTo
     {
         return $this->belongsTo(Cooperative::class, 'cooperative_id');
+    }
+
+    public function paymentBatch(): BelongsTo
+    {
+        return $this->belongsTo(PaymentBatch::class, 'payment_batch_id');
     }
 }

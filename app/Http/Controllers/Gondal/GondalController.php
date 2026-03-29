@@ -614,7 +614,7 @@ class GondalController extends Controller
     {
         $tab = $this->resolveModuleTab($request, 'logistics', 'trips');
 
-        $tripQuery = LogisticsTrip::query()->with(['rider', 'cooperative']);
+        $tripQuery = LogisticsTrip::query()->with(['rider', 'cooperative', 'paymentBatch']);
 
         if ($status = (string) $request->query('status', '')) {
             $tripQuery->where('status', $status);
@@ -663,6 +663,49 @@ class GondalController extends Controller
         return redirect()->route('gondal.logistics', ['tab' => 'trips'])->with('success', __('Trip recorded successfully.'));
     }
 
+    public function approveLogisticsTrip(string $id, Request $request): RedirectResponse
+    {
+        $this->requireModulePermission($request, 'logistics', 'trips');
+
+        $trip = LogisticsTrip::query()->with(['rider', 'cooperative', 'paymentBatch'])->findOrFail($id);
+
+        if ($trip->status !== 'completed') {
+            return back()->with('error', __('Only completed trips can be approved for payment.'));
+        }
+
+        if ($trip->payment_batch_id) {
+            return back()->with('error', __('This trip has already been sent to payment.'));
+        }
+
+        $batch = PaymentBatch::query()->create([
+            'name' => __('Trip Payment - :rider - :date', [
+                'rider' => $trip->rider?->name ?: 'Unknown Rider',
+                'date' => optional($trip->trip_date)->toDateString() ?: now()->toDateString(),
+            ]),
+            'payee_type' => 'rider',
+            'period_start' => optional($trip->trip_date)->toDateString() ?: now()->toDateString(),
+            'period_end' => optional($trip->trip_date)->toDateString() ?: now()->toDateString(),
+            'status' => 'approved',
+            'total_amount' => (float) $trip->fuel_cost,
+        ]);
+
+        $trip->update([
+            'status' => 'approved',
+            'payment_batch_id' => $batch->id,
+        ]);
+
+        $this->writeAuditLog($request, 'logistics', 'trip_approved_for_payment', [
+            'trip_id' => $trip->id,
+            'batch_id' => $batch->id,
+            'rider_id' => $trip->rider_id,
+            'amount' => $trip->fuel_cost,
+        ]);
+
+        return redirect()
+            ->route('gondal.logistics', ['tab' => 'trips'])
+            ->with('success', __('Trip approved and sent to payment successfully.'));
+    }
+
     public function storeLogisticsRider(Request $request): RedirectResponse
     {
         $this->requireModulePermission($request, 'logistics', 'riders', 'create');
@@ -670,6 +713,16 @@ class GondalController extends Controller
         $payload = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
+            'photo' => ['nullable', 'image', 'max:4096'],
+            'bank_name' => ['nullable', 'string', 'max:255'],
+            'account_number' => ['nullable', 'string', 'max:50'],
+            'account_name' => ['nullable', 'string', 'max:255'],
+            'bike_make' => ['nullable', 'string', 'max:255'],
+            'bike_model' => ['nullable', 'string', 'max:255'],
+            'bike_plate_number' => ['nullable', 'string', 'max:100'],
+            'identification_type' => ['nullable', 'string', 'max:255'],
+            'identification_number' => ['nullable', 'string', 'max:100'],
+            'identification_document' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
             'status' => ['required', 'in:active,inactive'],
         ]);
 
@@ -677,12 +730,40 @@ class GondalController extends Controller
             'name' => $payload['name'],
             'code' => 'RID-'.str_pad((string) ((int) LogisticsRider::query()->max('id') + 1), 3, '0', STR_PAD_LEFT),
             'phone' => $payload['phone'] ?: null,
+            'photo_path' => $this->storeRiderAsset($request->file('photo'), 'photo'),
+            'bank_name' => $payload['bank_name'] ?: null,
+            'account_number' => $payload['account_number'] ?: null,
+            'account_name' => $payload['account_name'] ?: null,
+            'bike_make' => $payload['bike_make'] ?: null,
+            'bike_model' => $payload['bike_model'] ?: null,
+            'bike_plate_number' => $payload['bike_plate_number'] ?: null,
+            'identification_type' => $payload['identification_type'] ?: null,
+            'identification_number' => $payload['identification_number'] ?: null,
+            'identification_document_path' => $this->storeRiderAsset($request->file('identification_document'), 'identification'),
             'status' => $payload['status'],
         ]);
 
         $this->writeAuditLog($request, 'logistics', 'rider_created', ['rider_id' => $rider->id, 'code' => $rider->code]);
 
         return redirect()->route('gondal.logistics', ['tab' => 'riders'])->with('success', __('Rider created successfully.'));
+    }
+
+    public function logisticsRiderDetail(string $id)
+    {
+        $rider = LogisticsRider::query()
+            ->with(['trips.cooperative'])
+            ->withCount('trips')
+            ->findOrFail($id);
+
+        $trips = $rider->trips->sortByDesc(fn (LogisticsTrip $trip) => optional($trip->trip_date)?->timestamp ?? 0)->values();
+
+        return view('gondal.rider-detail', [
+            'rider' => $rider,
+            'trips' => $trips,
+            'totalLiters' => round((float) $trips->sum('volume_liters'), 2),
+            'totalFuelCost' => round((float) $trips->sum('fuel_cost'), 2),
+            'lastTripDate' => optional($trips->first()?->trip_date)->toDateString(),
+        ]);
     }
 
     public function operations(Request $request)
@@ -1910,20 +1991,36 @@ class GondalController extends Controller
                     $rider->code,
                     $rider->name,
                     $rider->phone,
+                    $rider->bank_name,
+                    $rider->account_number,
+                    $rider->account_name,
+                    $rider->bike_make,
+                    $rider->bike_model,
+                    $rider->bike_plate_number,
+                    $rider->identification_type,
+                    $rider->identification_number,
+                    $rider->photo_path,
+                    $rider->identification_document_path,
                     $rider->status,
                     (string) $rider->trips_count,
                 ])->all();
 
             return $this->streamCsvDownload(
                 'gondal-logistics-riders.csv',
-                ['code', 'name', 'phone', 'status', 'trips_count'],
+                ['code', 'name', 'phone', 'bank_name', 'account_number', 'account_name', 'bike_make', 'bike_model', 'bike_plate_number', 'identification_type', 'identification_number', 'photo_path', 'identification_document_path', 'status', 'trips_count'],
                 $rows,
             );
         }
 
-        $rows = LogisticsTrip::query()
+        $tripQuery = LogisticsTrip::query()
             ->with(['rider', 'cooperative'])
-            ->orderByDesc('trip_date')
+            ->orderByDesc('trip_date');
+
+        if ($request->filled('rider_id')) {
+            $tripQuery->where('rider_id', $request->query('rider_id'));
+        }
+
+        $rows = $tripQuery
             ->get()
             ->map(fn (LogisticsTrip $trip) => [
                 optional($trip->trip_date)->toDateString(),
@@ -1942,8 +2039,12 @@ class GondalController extends Controller
                 $trip->status,
             ])->all();
 
+        $filename = $request->filled('rider_id')
+            ? 'gondal-rider-trip-history.csv'
+            : 'gondal-logistics-trips.csv';
+
         return $this->streamCsvDownload(
-            'gondal-logistics-trips.csv',
+            $filename,
             ['trip_date', 'cooperative_id', 'cooperative_code', 'cooperative_name', 'rider_id', 'rider_code', 'rider_name', 'vehicle_name', 'departure_time', 'arrival_time', 'volume_liters', 'distance_km', 'fuel_cost', 'status'],
             $rows,
         );
@@ -2512,7 +2613,7 @@ class GondalController extends Controller
             'volume_liters' => ['required', 'numeric', 'min:0.1'],
             'distance_km' => ['required', 'numeric', 'min:0'],
             'fuel_cost' => ['required', 'numeric', 'min:0'],
-            'status' => ['required', 'in:scheduled,in_transit,completed,cancelled'],
+            'status' => ['required', 'in:scheduled,in_transit,completed,approved,cancelled'],
         ]);
     }
 
@@ -2717,6 +2818,17 @@ class GondalController extends Controller
         return $file->storeAs('uploads/farmer_profiles', $filename);
     }
 
+    protected function storeRiderAsset(?UploadedFile $file, string $prefix): ?string
+    {
+        if (! $file) {
+            return null;
+        }
+
+        $filename = $prefix.'_'.Str::uuid().'.'.$file->getClientOriginalExtension();
+
+        return $file->storeAs('uploads/gondal/riders', $filename, 'public');
+    }
+
     protected function deleteFarmerPhoto(?string $path): void
     {
         if ($path && Storage::exists($path)) {
@@ -2888,7 +3000,17 @@ class GondalController extends Controller
 
     protected function resolveCooperativeIdFromCsvRow(array $row, bool $required = true): ?int
     {
-        $value = $this->csvValue($row, ['cooperative_id', 'cooperative_code', 'cooperative_name', 'cooperative', 'mcc']);
+        $value = $this->csvValue($row, [
+            'cooperative_id',
+            'cooperative_code',
+            'cooperative_name',
+            'cooperative',
+            'milk_collection_center_id',
+            'milk_collection_center_code',
+            'milk_collection_center_name',
+            'milk_collection_center',
+            'mcc',
+        ]);
 
         if ($value === null) {
             if ($required) {
@@ -3077,7 +3199,7 @@ class GondalController extends Controller
                 'volume_liters' => ['required', 'numeric', 'min:0.1'],
                 'distance_km' => ['required', 'numeric', 'min:0'],
                 'fuel_cost' => ['required', 'numeric', 'min:0'],
-                'status' => ['required', 'in:scheduled,in_transit,completed,cancelled'],
+                'status' => ['required', 'in:scheduled,in_transit,completed,approved,cancelled'],
             ])->validate();
 
             LogisticsTrip::query()->create($payload);
@@ -3095,10 +3217,30 @@ class GondalController extends Controller
             $payload = Validator::make([
                 'name' => $this->csvRequiredValue($row, ['name'], 'name'),
                 'phone' => $this->csvValue($row, ['phone']),
+                'bank_name' => $this->csvValue($row, ['bank_name']),
+                'account_number' => $this->csvValue($row, ['account_number', 'bank_account_number']),
+                'account_name' => $this->csvValue($row, ['account_name', 'bank_account_name']),
+                'bike_make' => $this->csvValue($row, ['bike_make']),
+                'bike_model' => $this->csvValue($row, ['bike_model']),
+                'bike_plate_number' => $this->csvValue($row, ['bike_plate_number', 'plate_number']),
+                'identification_type' => $this->csvValue($row, ['identification_type', 'id_type']),
+                'identification_number' => $this->csvValue($row, ['identification_number', 'id_number']),
+                'photo_path' => $this->csvValue($row, ['photo_path', 'image_path']),
+                'identification_document_path' => $this->csvValue($row, ['identification_document_path', 'identification_path', 'id_document_path']),
                 'status' => Str::lower($this->csvValue($row, ['status']) ?: 'active'),
             ], [
                 'name' => ['required', 'string', 'max:255'],
                 'phone' => ['nullable', 'string', 'max:255'],
+                'bank_name' => ['nullable', 'string', 'max:255'],
+                'account_number' => ['nullable', 'string', 'max:50'],
+                'account_name' => ['nullable', 'string', 'max:255'],
+                'bike_make' => ['nullable', 'string', 'max:255'],
+                'bike_model' => ['nullable', 'string', 'max:255'],
+                'bike_plate_number' => ['nullable', 'string', 'max:100'],
+                'identification_type' => ['nullable', 'string', 'max:255'],
+                'identification_number' => ['nullable', 'string', 'max:100'],
+                'photo_path' => ['nullable', 'string', 'max:2048'],
+                'identification_document_path' => ['nullable', 'string', 'max:2048'],
                 'status' => ['required', 'in:active,inactive'],
             ])->validate();
 

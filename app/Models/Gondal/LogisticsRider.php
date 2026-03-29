@@ -12,7 +12,22 @@ class LogisticsRider extends Model
 
     protected $table = 'gondal_logistics_riders';
 
-    protected $fillable = ['name', 'code', 'phone', 'status'];
+    protected $fillable = [
+        'name',
+        'code',
+        'phone',
+        'photo_path',
+        'bank_name',
+        'account_number',
+        'account_name',
+        'bike_make',
+        'bike_model',
+        'bike_plate_number',
+        'identification_type',
+        'identification_number',
+        'identification_document_path',
+        'status',
+    ];
 
     public function trips(): HasMany
     {
