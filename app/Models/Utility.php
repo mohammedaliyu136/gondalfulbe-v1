@@ -4230,7 +4230,13 @@ class Utility extends Model
                     $name = $name;
 
                     if ($settings['storage_setting'] == 'local') {
-                        $request->$key_name->move(storage_path($path), $name);
+                        $localPath = storage_path('app/public/' . trim($path, '/'));
+
+                        if (!file_exists($localPath)) {
+                            mkdir($localPath, 0777, true);
+                        }
+
+                        $request->$key_name->move($localPath, $name);
                         $path = $path . $name;
                     } else if ($settings['storage_setting'] == 'wasabi') {
 
