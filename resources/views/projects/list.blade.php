@@ -6,6 +6,8 @@
                     <thead>
                     <tr>
                         <th>{{__('Project')}}</th>
+                        <th>{{__('Partner / NGO')}}</th>
+                        <th>{{__('Agents')}}</th>
                         <th>{{__('Status')}}</th>
                         <th>{{__('Users')}}</th>
                         <th>{{__('Completion')}}</th>
@@ -26,6 +28,8 @@
                                         <p class="mb-0"><a href="{{ route('projects.show',$project) }}" class="name mb-0 h6 text-sm">{{ $project->project_name }}</a></p>
                                     </div>
                                 </td>
+                                <td>{{ $project->client?->name ?: '—' }}</td>
+                                <td>{{ $project->agent_profiles_count ?? 0 }}</td>
                                 <td class="">
                                     <span class="status_badge badge bg-{{\App\Models\Project::$status_color[$project->status]}} p-2 px-3 rounded">{{ __(\App\Models\Project::$project_status[$project->status]) }}</span>
                                 </td>
@@ -86,7 +90,7 @@
                         @endforeach
                     @else
                         <tr>
-                            <th scope="col" colspan="7"><h6 class="text-center">{{__('No Projects Found.')}}</h6></th>
+                            <th scope="col" colspan="8"><h6 class="text-center">{{__('No Projects Found.')}}</h6></th>
                         </tr>
                     @endif
                     </tbody>
@@ -95,4 +99,3 @@
         </div>
     </div>
 </div>
-

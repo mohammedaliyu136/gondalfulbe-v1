@@ -13,10 +13,16 @@
     </div>
     @endif
     {{-- end for ai module--}}
+    <div class="alert alert-info py-2">
+        <div class="fw-semibold mb-1">{{ __('Gondal agent flow') }}</div>
+        <div class="small mb-0">
+            {{ __('Use this project to group farmer and independent reseller agents under one program. The Partner / NGO field controls which partner login can view performance for this project’s agents.') }}
+        </div>
+    </div>
     <div class="row">
         <div class="col-sm-12 col-md-12">
             <div class="form-group">
-                {{ Form::label('project_name', __('Project Name'), ['class' => 'form-label']) }}<x-required></x-required>
+                {{ Form::label('project_name', __('Project / Program Name'), ['class' => 'form-label']) }}<x-required></x-required>
                 {{ Form::text('project_name', null, ['class' => 'form-control', 'required' => 'required']) }}
             </div>
         </div>
@@ -39,10 +45,10 @@
     <div class="row">
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
-                {{ Form::label('client', __('Client'),['class'=>'form-label']) }}
+                {{ Form::label('client', __('Partner / NGO'),['class'=>'form-label']) }}
                 {!! Form::select('client', $clients, $project->client_id,array('class' => 'form-control select2','id'=>'choices-multiple1')) !!}
                 <div class="text-xs mt-1">
-                    {{ __('Create client here.') }} <a href="{{ route('clients.index') }}"><b>{{ __('Create client') }}</b></a>
+                    {{ __('Choose the partner login that should see agents and performance under this project.') }} <a href="{{ route('clients.index') }}"><b>{{ __('Create partner login') }}</b></a>
                 </div>
             </div>
         </div>
@@ -66,7 +72,7 @@
         <div class="col-sm-12 col-md-12">
             <div class="form-group">
                 {{ Form::label('description', __('Description'), ['class' => 'form-label']) }}
-                {{ Form::textarea('description', null, ['class' => 'form-control', 'rows' => '4', 'cols' => '50']) }}
+                {{ Form::textarea('description', null, ['class' => 'form-control', 'rows' => '4', 'cols' => '50', 'placeholder'=>__('Describe the project scope, sponsor, area, or agent cohort')]) }}
             </div>
         </div>
     </div>
@@ -74,7 +80,7 @@
         <div class="col-sm-12 col-md-12">
             <div class="form-group">
                 {{ Form::label('tag', __('Tag'), ['class' => 'form-label']) }}
-                {{ Form::text('tag', isset($project->tags) ? $project->tags: '', ['class' => 'form-control', 'data-toggle' => 'tags']) }}
+                {{ Form::text('tag', isset($project->tags) ? $project->tags: '', ['class' => 'form-control', 'data-toggle' => 'tags', 'placeholder'=>__('Examples: NGO, Yola, Livestock, Women Farmers')]) }}
             </div>
         </div>
     </div>
@@ -97,6 +103,9 @@
                 <input type="file" class="form-control file-validate" name="project_image" >
                 <p id="" class="file-error text-danger"></p>
             </div>
+            <div class="text-xs text-muted mb-2">
+                {{ __('Optional. Leave this empty to keep the current image.') }}
+            </div>
             <img {{$project->img_image}} class="avatar avatar-xl" alt="project-image">
         </div>
 
@@ -107,4 +116,3 @@
     <input type="submit" value="{{__('Update')}}" class="btn  btn-primary">
 </div>
 {{Form::close()}}
-

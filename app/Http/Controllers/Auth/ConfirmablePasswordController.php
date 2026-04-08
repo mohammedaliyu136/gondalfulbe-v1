@@ -17,13 +17,12 @@ class ConfirmablePasswordController extends Controller
      */
     public function show()
     {
-        return view('auth.confirm-password');
+        return view('auth.passwords.confirm');
     }
 
     /**
      * Confirm the user's password.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return mixed
      */
     public function store(Request $request)

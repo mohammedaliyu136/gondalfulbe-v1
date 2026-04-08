@@ -56,7 +56,7 @@
             {{------------ End Status Filter ----------------}}
 
         @can('create project')
-            <a href="#" data-size="lg" data-url="{{ route('projects.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create New Project')}}" data-title="{{__('Create Project')}}" class="btn btn-sm btn-primary">
+            <a href="#" data-size="lg" data-url="{{ route('projects.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create New Project / Program')}}" data-title="{{__('Create Project / Program')}}" class="btn btn-sm btn-primary">
                 <i class="ti ti-plus"></i>
             </a>
         @endcan
@@ -64,6 +64,25 @@
 @endsection
 
 @section('content')
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 bg-light">
+                <div class="card-body py-3">
+                    <div class="d-flex flex-wrap justify-content-between gap-3 align-items-start">
+                        <div>
+                            <h6 class="mb-1">{{ __('Use Projects As Agent Programs') }}</h6>
+                            <p class="text-muted mb-0">
+                                {{ __('For Gondal, create a project for each partner-funded or operational program, then assign farmer and independent reseller agents to that project from the Agents page.') }}
+                            </p>
+                        </div>
+                        <div class="text-muted small">
+                            {{ __('Set the partner or NGO in the Client field so partner logins only see the agents sponsored under their own project.') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row min-750" id="project_view"></div>
 @endsection
 

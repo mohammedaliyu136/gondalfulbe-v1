@@ -55,8 +55,8 @@ class ProjectController extends Controller
     {
         if(\Auth::user()->can('create project'))
         {
-          $users   = User::where('created_by', '=', \Auth::user()->creatorId())->whereNotIn('type', ['company', 'client'])->get()->pluck('name', 'id');
-          $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->get()->pluck('name', 'id');
+          $users   = User::where('created_by', '=', \Auth::user()->creatorId())->whereNotIn('type', ['company', 'client'])->orderBy('name')->get()->pluck('name', 'id');
+          $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->orderBy('name')->get()->pluck('name', 'id');
           $clients->prepend('Select Client', '');
           $users->prepend('Select User', '');
             return view('projects.create', compact('clients','users'));
@@ -82,7 +82,7 @@ class ProjectController extends Controller
             $validator = \Validator::make(
                 $request->all(), [
                                 'project_name' => 'required',
-                                'project_image' => 'required',
+                                'project_image' => 'nullable|image',
                             ]
             );
             if($validator->fails())
@@ -91,8 +91,8 @@ class ProjectController extends Controller
             }
             $project = new Project();
             $project->project_name = $request->project_name;
-            $project->start_date = date("Y-m-d H:i:s", strtotime($request->start_date));
-            $project->end_date = isset($request->end_date) ? date("Y-m-d H:i:s", strtotime($request->end_date)) : null;
+            $project->start_date = $request->filled('start_date') ? date("Y-m-d H:i:s", strtotime($request->start_date)) : null;
+            $project->end_date = $request->filled('end_date') ? date("Y-m-d H:i:s", strtotime($request->end_date)) : null;
 
             if($request->hasFile('project_image'))
             {
@@ -110,7 +110,7 @@ class ProjectController extends Controller
             $project->client_id = $request->client ?? 0;
             $project->budget = !empty($request->budget) ? $request->budget : 0;
             $project->description = $request->description;
-            $project->status = $request->status;
+            $project->status = $request->status ?: 'in_progress';
             $project->estimated_hrs = $request->estimated_hrs;
             $project->tags = $request->tag;
             $project->created_by = \Auth::user()->creatorId();
@@ -171,7 +171,8 @@ class ProjectController extends Controller
             $setting  = Utility::settings(\Auth::user()->creatorId());
 
             $client = User::find($project->client_id);
-            $user = User::find($request->user[0]);
+            $firstAssignedUserId = is_array($request->user) ? ($request->user[0] ?? null) : null;
+            $user = $firstAssignedUserId ? User::find($firstAssignedUserId) : null;
             $users = [$client , $user];
 
             if(isset($setting['new_project']) && $setting['new_project'] ==1)
@@ -239,6 +240,7 @@ class ProjectController extends Controller
     {
         if(\Auth::user()->can('view project'))
         {
+            $project->load(['client'])->loadCount('agentProfiles');
 
             $usr           = Auth::user();
             if(\Auth::user()->type == 'client'){
@@ -396,7 +398,7 @@ class ProjectController extends Controller
     {
         if(\Auth::user()->can('edit project'))
         {
-          $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->get()->pluck('name', 'id');
+          $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->orderBy('name')->get()->pluck('name', 'id');
           $clients->prepend('Select Client', '');
           $project = Project::findOrfail($project->id);
           if($project->created_by == \Auth::user()->creatorId())
@@ -437,8 +439,8 @@ class ProjectController extends Controller
             }
             $project = Project::find($project->id);
             $project->project_name = $request->project_name;
-            $project->start_date = date("Y-m-d H:i:s", strtotime($request->start_date));
-            $project->end_date = isset($request->end_date) ? date("Y-m-d H:i:s", strtotime($request->end_date)) : null;
+            $project->start_date = $request->filled('start_date') ? date("Y-m-d H:i:s", strtotime($request->start_date)) : null;
+            $project->end_date = $request->filled('end_date') ? date("Y-m-d H:i:s", strtotime($request->end_date)) : null;
 
             if($request->hasFile('project_image'))
             {
@@ -458,7 +460,7 @@ class ProjectController extends Controller
             $project->budget = $request->budget;
             $project->client_id = $request->client ?? 0;
             $project->description = $request->description;
-            $project->status = $request->status;
+            $project->status = $request->status ?: 'in_progress';
             $project->estimated_hrs = $request->estimated_hrs;
             $project->tags = $request->tag;
             $project->save();
@@ -748,7 +750,7 @@ class ProjectController extends Controller
             if($request->ajax() && $request->has('view') && $request->has('sort'))
             {
                 $sort     = explode('-', $request->sort);
-                $projects = Project::whereIn('id', array_keys($user_projects))->orderBy($sort[0], $sort[1]);
+                $projects = Project::with(['client'])->withCount('agentProfiles')->whereIn('id', array_keys($user_projects))->orderBy($sort[0], $sort[1]);
 
                 if(!empty($request->keyword))
                 {

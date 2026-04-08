@@ -15,6 +15,7 @@ class InventoryReconciliation extends Model
 
     protected $fillable = [
         'agent_profile_id',
+        'one_stop_shop_id',
         'inventory_item_id',
         'submitted_by',
         'reviewed_by',
@@ -75,6 +76,11 @@ class InventoryReconciliation extends Model
     public function item(): BelongsTo
     {
         return $this->belongsTo(InventoryItem::class, 'inventory_item_id');
+    }
+
+    public function oneStopShop(): BelongsTo
+    {
+        return $this->belongsTo(OneStopShop::class, 'one_stop_shop_id');
     }
 
     public function submitter(): BelongsTo

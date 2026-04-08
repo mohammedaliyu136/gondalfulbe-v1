@@ -9,9 +9,9 @@ use App\Models\GenerateOfferLetter;
 use App\Models\JoiningLetter;
 use App\Models\NOC;
 use App\Models\User;
-use  App\Models\Utility;
-use Auth;
+use App\Models\Utility;
 use App\Providers\RouteServiceProvider;
+use Auth;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -26,12 +26,10 @@ class RegisteredUserController extends Controller
      *
      * @return \Illuminate\View\View
      */
-
-  public function __construct()
+    public function __construct()
     {
         $this->middleware('guest');
     }
-
 
     public function create()
     {
@@ -41,7 +39,6 @@ class RegisteredUserController extends Controller
     /**
      * Handle an incoming registration request.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      *
      * @throws \Illuminate\Validation\ValidationException
@@ -52,24 +49,22 @@ class RegisteredUserController extends Controller
         //ReCpatcha
         $validation = [];
 
-        if(isset($settings['recaptcha_module']) && $settings['recaptcha_module'] == 'on')
-        {
-            if($settings['google_recaptcha_version'] == 'v2-checkbox'){
+        if (isset($settings['recaptcha_module']) && $settings['recaptcha_module'] == 'on') {
+            if ($settings['google_recaptcha_version'] == 'v2-checkbox') {
                 $validation['g-recaptcha-response'] = 'required|captcha';
-            }
-            elseif($settings['google_recaptcha_version'] == 'v3-checkbox'){
+            } elseif ($settings['google_recaptcha_version'] == 'v3-checkbox') {
                 $result = event(new VerifyReCaptchaToken($request));
 
-                if (!isset($result[0]['status']) || $result[0]['status'] != true) {
+                if (! isset($result[0]['status']) || $result[0]['status'] != true) {
                     $key = 'g-recaptcha-response';
                     $request->merge([$key => null]); // Set the key to null
 
                     $validation['g-recaptcha-response'] = 'required';
                 }
-            }else{
+            } else {
                 $validation = [];
             }
-        }else{
+        } else {
             $validation = [];
         }
         $this->validate($request, $validation);
@@ -77,7 +72,7 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'string',
-                         'min:8','confirmed', Rules\Password::defaults()],
+                'min:8', 'confirmed', Rules\Password::defaults()],
             'terms' => 'required',
         ]);
 
@@ -94,16 +89,17 @@ class RegisteredUserController extends Controller
             'plan' => 1,
             'lang' => Utility::getValByName('default_language'),
             'avatar' => '',
-            'referral_code'=> $code,
-            'used_referral_code'=>$request->ref_code,
+            'referral_code' => $code,
+            'used_referral_code' => $request->input('ref_code', 0),
             'created_by' => 1,
         ]);
         \Auth::login($user);
+        $request->session()->regenerate();
 
         $settings = Utility::settings();
 
         if ($settings['email_verification'] == 'on') {
-            try { 
+            try {
 
                 Utility::smtpDetail(1);
 
@@ -136,6 +132,7 @@ class RegisteredUserController extends Controller
             } catch (\Exception $e) {
 
                 $user->delete();
+
                 return redirect()->back()->with('status', __('Email SMTP settings does not configure so please contact to your site admin.'));
             }
 
@@ -182,39 +179,34 @@ class RegisteredUserController extends Controller
 
     }
 
-    public function showRegistrationForm(Request $request, $ref = '' , $lang = '')
+    public function showRegistrationForm(Request $request, $ref = '', $lang = '')
     {
         $settings = Utility::settings();
 
-        if($settings['enable_signup'] == 'on')
-        {
+        if ($settings['enable_signup'] == 'on') {
             $langList = Utility::languages()->toArray();
             $lang = array_key_exists($lang, $langList) ? $lang : 'en';
 
-            if($lang == '')
-            {
+            if ($lang == '') {
                 $lang = Utility::getValByName('default_language');
             }
             \App::setLocale($lang);
-            if($ref == '')
-            {
+            if ($ref == '') {
                 $ref = 0;
             }
 
-            $refCode = User::where('referral_code' , '=', $ref)->first();
-            if(isset($refCode) && $refCode->referral_code != $ref)
-            {
+            $refCode = User::where('referral_code', '=', $ref)->first();
+            if (isset($refCode) && $refCode->referral_code != $ref) {
                 return redirect()->route('register');
             }
 
             $plan = null;
-            if($request->plan){
+            if ($request->plan) {
                 $plan = $request->plan;
             }
-            return view('auth.register', compact('lang' , 'ref', 'plan'));
-        }
-        else
-        {
+
+            return view('auth.register', compact('lang', 'ref', 'plan'));
+        } else {
             return \Redirect::to('login');
         }
     }

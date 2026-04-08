@@ -65,6 +65,9 @@
                                     <th>{{ __('Cooperative') }}</th>
                                     <th>{{ __('MCC') }}</th>
                                     <th>{{ __('Status') }}</th>
+                                    <th>{{ __('Ledger') }}</th>
+                                    <th>{{ __('Open Orders') }}</th>
+                                    <th>{{ __('Sponsor Cover') }}</th>
                                     <th>{{ __('Digital') }}</th>
                                     <th>{{ __('Last Supply') }}</th>
                                     <th>{{ __('Action') }}</th>
@@ -81,6 +84,9 @@
                                         <td>
                                             <span class="badge bg-light text-dark">{{ $farmer['status'] }}</span>
                                         </td>
+                                        <td>₦{{ number_format((float) $farmer['ledger_balance'], 2) }}</td>
+                                        <td>₦{{ number_format((float) $farmer['open_order_balance'], 2) }}</td>
+                                        <td>₦{{ number_format((float) $farmer['sponsor_order_balance'], 2) }}</td>
                                         <td>{{ $farmer['digital_payment'] ? __('Yes') : __('No') }}</td>
                                         <td>{{ $farmer['last_supply_at'] ?: 'N/A' }}</td>
                                         <td class="d-flex gap-2">

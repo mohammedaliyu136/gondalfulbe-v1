@@ -8,9 +8,12 @@ use App\Models\CustomField;
 use App\Models\Transaction;
 use App\Models\Utility;
 use App\Models\Vender;
-use Auth;
 use App\Models\User;
 use App\Models\Plan;
+use App\Models\Gondal\InventoryCredit;
+use App\Models\Gondal\SettlementRun;
+use Modules\MilkCollection\Models\MilkCollection;
+use Auth;
 use File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -202,10 +205,59 @@ class VenderController extends Controller
         }
 
         $id     = \Crypt::decrypt($ids);
-        $vendor = Vender::find($id);
+        $vendor = Vender::with(['cooperative', 'communityRecord'])->find($id);
+        if (!$vendor) {
+            return redirect()->back()->with('error', __('Vendor Not Found.'));
+        }
+
         $vendor->customField = CustomField::getShowData($vendor, 'vendor');
 
-        return view('vender.show', compact('vendor'));
+        // Analytics
+        $milkStats = $vendor->milkCollections()
+            ->where('status', 'validated')
+            ->selectRaw('SUM(quantity) as total_liters, AVG(fat_percentage) as avg_fat, AVG(snf_percentage) as avg_snf, SUM(total_price) as total_earnings')
+            ->first();
+
+        $outstandingLoans = InventoryCredit::where('vender_id', $vendor->id)
+            ->where('status', 'pending')
+            ->sum('outstanding_amount');
+
+        $recentCollections = $vendor->milkCollections()
+            ->orderByDesc('collection_date')
+            ->take(10)
+            ->get();
+
+        $chartData = [
+            'labels' => $recentCollections->reverse()->pluck('collection_date')->map(fn($d) => $d->format('d M'))->values(),
+            'data' => $recentCollections->reverse()->pluck('quantity')->values(),
+        ];
+
+        $recentTransactions = Transaction::where('user_id', $vendor->id)
+            ->where('user_type', 'Vender')
+            ->orderByDesc('date')
+            ->take(10)
+            ->get();
+
+        $recentBills = $vendor->bills()
+            ->orderByDesc('bill_date')
+            ->take(10)
+            ->get();
+
+        $recentSettlements = $vendor->settlementRuns()
+            ->orderByDesc('created_at')
+            ->take(10)
+            ->get();
+
+        return view('vender.show', compact(
+            'vendor', 
+            'milkStats', 
+            'outstandingLoans', 
+            'recentCollections', 
+            'chartData',
+            'recentTransactions',
+            'recentBills',
+            'recentSettlements'
+        ));
     }
 
 

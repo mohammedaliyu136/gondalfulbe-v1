@@ -19,12 +19,28 @@ Route::middleware(['auth', 'XSS', 'revalidate'])
                 Route::put('/farmers/{farmer}', [GondalController::class, 'updateFarmer'])->name('farmers.update');
                 Route::delete('/farmers/{farmer}', [GondalController::class, 'destroyFarmer'])->name('farmers.destroy');
 
+                Route::get('/communities', [GondalController::class, 'communities'])->name('communities');
+                Route::get('/communities/sample.csv', [GondalController::class, 'downloadCommunityImportSample'])->name('communities.sample');
+                Route::post('/communities/import', [GondalController::class, 'importCommunities'])->name('communities.import');
+                Route::post('/communities', [GondalController::class, 'storeCommunity'])->name('communities.store');
+
+                Route::get('/partners', [GondalController::class, 'partners'])->name('partners');
+                Route::post('/partners', [GondalController::class, 'storePartner'])->name('partners.store');
+
+                Route::get('/agents', [GondalController::class, 'agents'])->name('agents');
+                Route::get('/agents/sample.csv', [GondalController::class, 'downloadAgentImportSample'])->name('agents.sample');
+                Route::post('/agents/import', [GondalController::class, 'importAgents'])->name('agents.import');
+                Route::get('/agents/dashboard', [GondalController::class, 'agentDashboard'])->name('agents.dashboard');
+                Route::get('/agents/analytics', [GondalController::class, 'agentAnalytics'])->name('agents.analytics');
+
                 Route::get('/cooperatives', [GondalController::class, 'cooperatives'])->name('cooperatives');
                 Route::post('/cooperatives', [GondalController::class, 'storeCooperative'])->name('cooperatives.store');
                 Route::get('/cooperatives/{id}', [GondalController::class, 'cooperativeDetail'])->name('cooperatives.show');
 
                 Route::get('/milk-collection', [GondalController::class, 'milkCollection'])->name('milk-collection');
+                Route::get('/milk-collection/{id}', [GondalController::class, 'milkCollectionDetail'])->name('milk-collection.show');
                 Route::post('/milk-collection', [GondalController::class, 'storeMilkCollection'])->name('milk-collection.store');
+                Route::post('/milk-collection/{id}/validate', [GondalController::class, 'validateMilkCollection'])->name('milk-collection.validate');
 
                 Route::get('/logistics', [GondalController::class, 'logistics'])->name('logistics');
                 Route::get('/logistics/export.csv', [GondalController::class, 'exportLogistics'])->name('logistics.export');
@@ -48,9 +64,12 @@ Route::middleware(['auth', 'XSS', 'revalidate'])
                 Route::post('/requisitions/{id}/approve', [GondalController::class, 'approveRequisition'])->name('requisitions.approve');
                 Route::post('/requisitions/{id}/reject', [GondalController::class, 'rejectRequisition'])->name('requisitions.reject');
 
+                Route::get('/accounting', [GondalController::class, 'accounting'])->name('accounting');
+
                 Route::get('/payments', [GondalController::class, 'payments'])->name('payments');
                 Route::get('/payments/export.csv', [GondalController::class, 'exportPayments'])->name('payments.export');
                 Route::post('/payments/import', [GondalController::class, 'importPayments'])->name('payments.import');
+                Route::post('/payments/settlements', [GondalController::class, 'runFarmerSettlement'])->name('payments.settlements.store');
                 Route::post('/payments/batches', [GondalController::class, 'storePaymentBatch'])->name('payments.batches.store');
                 Route::post('/payments/batches/{id}/process', [GondalController::class, 'processPaymentBatch'])->name('payments.process');
 
@@ -69,6 +88,7 @@ Route::middleware(['auth', 'XSS', 'revalidate'])
 
                 Route::get('/warehouse', [GondalController::class, 'warehouse'])->name('warehouse');
                 Route::post('/warehouse', [GondalController::class, 'storeWarehouse'])->name('warehouse.store');
+                Route::post('/one-stop-shops', [GondalController::class, 'storeOneStopShop'])->name('one-stop-shops.store');
                 Route::post('/warehouse/stocks', [GondalController::class, 'storeWarehouseStock'])->name('warehouse.stocks.store');
                 Route::post('/warehouse/issues', [GondalController::class, 'storeWarehouseIssue'])->name('warehouse.issues.store');
 
@@ -77,6 +97,11 @@ Route::middleware(['auth', 'XSS', 'revalidate'])
                 Route::post('/extension/import', [GondalController::class, 'importExtension'])->name('extension.import');
                 Route::post('/extension/visits', [GondalController::class, 'storeExtensionVisit'])->name('extension.visits.store');
                 Route::post('/extension/trainings', [GondalController::class, 'storeExtensionTraining'])->name('extension.trainings.store');
+
+                Route::get('/loans', [App\Http\Controllers\Gondal\GondalLoanController::class, 'index'])->name('loans');
+                Route::post('/loans', [App\Http\Controllers\Gondal\GondalLoanController::class, 'store'])->name('loans.store');
+                Route::post('/loans/{loan}/approve', [App\Http\Controllers\Gondal\GondalLoanController::class, 'approve'])->name('loans.approve');
+                Route::post('/loans/{loan}/disburse', [App\Http\Controllers\Gondal\GondalLoanController::class, 'disburse'])->name('loans.disburse');
 
                 Route::get('/reports', [GondalController::class, 'reports'])->name('reports');
                 Route::get('/reports/export.csv', [GondalController::class, 'exportReports'])->name('reports.export');

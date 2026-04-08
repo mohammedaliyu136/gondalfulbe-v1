@@ -11,12 +11,13 @@
 
 @php
     $languages = App\Models\Utility::languages();
+    $currentLanguageLabel = $languages->get($lang, Str::upper($lang));
 @endphp
 @section('language-bar')
     <div class="lang-dropdown-only-desk">
         <li class="dropdown dash-h-item drp-language">
             <a class="dash-head-link dropdown-toggle btn" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                <span class="drp-text"> {{ $languages[$lang] }}
+                <span class="drp-text"> {{ $currentLanguageLabel }}
                 </span>
             </a>
             <div class="dropdown-menu dash-h-dropdown dropdown-menu-end">
@@ -60,5 +61,4 @@
     </div>
 
 @endsection
-
 

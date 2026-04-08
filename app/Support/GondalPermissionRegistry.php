@@ -33,7 +33,10 @@ class GondalPermissionRegistry
                     'records' => self::section('records', 'Records', 'milk collection records', ['manage', 'create', 'edit', 'export']),
                 ],
                 'page_tabs' => [
-                    self::tab('records', 'Records', 'records'),
+                    self::tab('all', 'All Records', 'all'),
+                    self::tab('pending', 'Pending Validation', 'pending'),
+                    self::tab('validated', 'Validated', 'validated'),
+                    self::tab('rejected', 'Rejected', 'rejected'),
                 ],
             ],
             'logistics' => [
@@ -77,9 +80,9 @@ class GondalPermissionRegistry
             'payments' => [
                 'label' => 'Payments',
                 'sections' => [
-                    'overview' => self::section('overview', 'Overview', 'payments overview', ['manage', 'create', 'import', 'export']),
-                    'batches' => self::section('batches', 'Batches', 'payments batches', ['manage', 'create', 'import', 'export']),
-                    'reconciliation' => self::section('reconciliation', 'Reconciliation', 'payments reconciliation', ['manage', 'create', 'import', 'export']),
+                    'overview' => self::section('overview', 'Overview', 'payments overview', ['manage', 'create', 'edit', 'import', 'export']),
+                    'batches' => self::section('batches', 'Batches', 'payments batches', ['manage', 'create', 'edit', 'import', 'export']),
+                    'reconciliation' => self::section('reconciliation', 'Reconciliation', 'payments reconciliation', ['manage', 'create', 'edit', 'import', 'export']),
                 ],
                 'page_tabs' => [
                     self::tab('overview', 'Overview', 'overview'),

@@ -52,6 +52,16 @@
                         <span
                             class="badge bg-light-{{ \App\Models\Project::$status_color[$project->status] }} py-1 px-2 text-uppercase mb-3">{{ __(\App\Models\Project::$project_status[$project->status]) }}</span>
                         <p class="text-muted text-sm">{{ $project->description }}</p>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <small class="fw-bold text-muted d-block">{{ __('Partner / NGO') }}</small>
+                                <span class="text-sm">{{ $project->client?->name ?: '—' }}</span>
+                            </div>
+                            <div class="col-6 text-end">
+                                <small class="fw-bold text-muted d-block">{{ __('Assigned Agents') }}</small>
+                                <span class="text-sm">{{ $project->agent_profiles_count ?? 0 }}</span>
+                            </div>
+                        </div>
                         <small class="fw-bold text-muted">{{ __('MEMBERS') }}</small>
                         <div class="d-flex mt-2">
                             @foreach ($project->users->take(3) as $user)

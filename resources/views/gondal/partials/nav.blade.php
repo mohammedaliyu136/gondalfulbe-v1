@@ -2,6 +2,8 @@
     $mainLinks = [
         ['label' => 'Dashboard', 'route' => 'gondal.dashboard'],
         ['label' => 'Farmers', 'route' => 'gondal.farmers'],
+        ['label' => 'Agents', 'route' => 'gondal.agents'],
+        ['label' => 'Communities', 'route' => 'gondal.communities'],
         ['label' => 'Cooperatives', 'route' => 'gondal.cooperatives'],
         ['label' => 'Milk Collection', 'route' => 'gondal.milk-collection'],
         ['label' => 'Logistics', 'route' => 'gondal.logistics'],

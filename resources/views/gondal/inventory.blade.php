@@ -8,13 +8,205 @@
         'stock' => ['label' => 'Product Catalog', 'icon' => 'ti ti-box'],
         'sales' => ['label' => 'Sales Entry', 'icon' => 'ti ti-receipt'],
         'credit' => ['label' => 'Credit Tracking', 'icon' => 'ti ti-credit-card'],
-        'agents' => ['label' => 'Agent Profiles', 'icon' => 'ti ti-users'],
+        'agents' => ['label' => 'Agents', 'icon' => 'ti ti-users'],
         'issues' => ['label' => 'Stock Issues', 'icon' => 'ti ti-package-export'],
         'remittances' => ['label' => 'Remittances', 'icon' => 'ti ti-cash-banknote'],
         'reconciliation' => ['label' => 'Reconciliation', 'icon' => 'ti ti-scale'],
     ];
     $activeTabTitle = $tabMeta[$tab]['label'] ?? 'Inventory';
 @endphp
+
+@push('script-page')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const locationHierarchy = @json($agentLocationHierarchy ?? []);
+            const stateSelect = document.querySelector('#agentState');
+            const lgaSelect = document.querySelector('#agentLga');
+            const communitySelect = document.querySelector('#agentCommunity');
+            const assignedCommunitiesSelect = document.querySelector('#agentAssignedCommunities');
+            const agentModal = document.getElementById('createAgentModal');
+            const agentForm = document.getElementById('createAgentForm');
+            const agentSteps = Array.from(document.querySelectorAll('.agent-form-step'));
+            const agentIndicators = Array.from(document.querySelectorAll('[data-step-indicator]'));
+            const prevStepButton = document.getElementById('agentWizardPrev');
+            const nextStepButton = document.getElementById('agentWizardNext');
+            const submitStepButton = document.getElementById('agentWizardSubmit');
+            let activeAgentStep = 0;
+
+            if (!stateSelect || !lgaSelect || !communitySelect || !assignedCommunitiesSelect) {
+                return;
+            }
+
+            const renderOptions = (select, values, placeholder, selectedValues = []) => {
+                const normalizedSelected = selectedValues.map(String);
+                select.innerHTML = '';
+
+                const placeholderOption = document.createElement('option');
+                placeholderOption.value = '';
+                placeholderOption.textContent = placeholder;
+                if (!select.multiple) {
+                    placeholderOption.selected = normalizedSelected.length === 0;
+                }
+                select.appendChild(placeholderOption);
+
+                values.forEach((value) => {
+                    const option = document.createElement('option');
+                    option.value = value;
+                    option.textContent = value;
+                    option.selected = normalizedSelected.includes(String(value));
+                    select.appendChild(option);
+                });
+            };
+
+            const syncAssignedCommunitySelection = () => {
+                const selectedCommunity = communitySelect.value;
+                if (! selectedCommunity) {
+                    return;
+                }
+
+                const selectedValues = new Set(
+                    Array.from(assignedCommunitiesSelect.selectedOptions).map((option) => option.value)
+                );
+
+                selectedValues.add(selectedCommunity);
+
+                Array.from(assignedCommunitiesSelect.options).forEach((option) => {
+                    if (option.value === '') {
+                        option.selected = false;
+                        return;
+                    }
+
+                    option.selected = selectedValues.has(option.value);
+                });
+            };
+
+            const syncLocationOptions = () => {
+                const selectedState = stateSelect.value;
+                const stateData = locationHierarchy[selectedState] || {};
+                const lgas = Object.keys(stateData);
+                const keepLga = lgas.includes(lgaSelect.value) ? lgaSelect.value : '';
+
+                renderOptions(lgaSelect, lgas, '{{ __('Select LGA') }}', keepLga ? [keepLga] : []);
+
+                const communities = keepLga ? (stateData[keepLga] || []) : [];
+                const keepCommunity = communities.includes(communitySelect.value) ? communitySelect.value : '';
+                const keepAssigned = Array.from(assignedCommunitiesSelect.selectedOptions)
+                    .map((option) => option.value)
+                    .filter((value) => communities.includes(value));
+
+                renderOptions(communitySelect, communities, '{{ __('Select community') }}', keepCommunity ? [keepCommunity] : []);
+                renderOptions(assignedCommunitiesSelect, communities, '{{ __('Select communities') }}', keepAssigned);
+                syncAssignedCommunitySelection();
+            };
+
+            stateSelect.addEventListener('change', syncLocationOptions);
+            lgaSelect.addEventListener('change', syncLocationOptions);
+            communitySelect.addEventListener('change', syncAssignedCommunitySelection);
+            syncLocationOptions();
+
+            const syncAgentStepUi = () => {
+                agentSteps.forEach((step, index) => {
+                    step.classList.toggle('d-none', index !== activeAgentStep);
+                });
+
+                agentIndicators.forEach((indicator, index) => {
+                    indicator.classList.toggle('bg-primary-subtle', index === activeAgentStep);
+                    indicator.classList.toggle('text-primary', index === activeAgentStep);
+                    indicator.classList.toggle('border-primary-subtle', index === activeAgentStep);
+                    indicator.classList.toggle('bg-light', index !== activeAgentStep);
+                    indicator.classList.toggle('text-muted', index !== activeAgentStep);
+                });
+
+                if (prevStepButton) {
+                    prevStepButton.classList.toggle('d-none', activeAgentStep === 0);
+                }
+
+                if (nextStepButton) {
+                    nextStepButton.classList.toggle('d-none', activeAgentStep === agentSteps.length - 1);
+                }
+
+                if (submitStepButton) {
+                    submitStepButton.classList.toggle('d-none', activeAgentStep !== agentSteps.length - 1);
+                }
+
+                const modalBody = agentModal?.querySelector('.modal-body');
+                if (modalBody) {
+                    modalBody.scrollTop = 0;
+                }
+            };
+
+            const validateAgentStep = (stepIndex) => {
+                const currentStep = agentSteps[stepIndex];
+                if (!currentStep) {
+                    return true;
+                }
+
+                const fields = Array.from(currentStep.querySelectorAll('input, select, textarea'));
+                for (const field of fields) {
+                    if (!field.checkValidity()) {
+                        field.reportValidity();
+                        return false;
+                    }
+                }
+
+                return true;
+            };
+
+            nextStepButton?.addEventListener('click', function () {
+                if (!validateAgentStep(activeAgentStep)) {
+                    return;
+                }
+
+                if (activeAgentStep < agentSteps.length - 1) {
+                    activeAgentStep += 1;
+                    syncAgentStepUi();
+                }
+            });
+
+            prevStepButton?.addEventListener('click', function () {
+                if (activeAgentStep > 0) {
+                    activeAgentStep -= 1;
+                    syncAgentStepUi();
+                }
+            });
+
+            agentIndicators.forEach((indicator, index) => {
+                indicator.addEventListener('click', function () {
+                    if (index <= activeAgentStep) {
+                        activeAgentStep = index;
+                        syncAgentStepUi();
+                    }
+                });
+            });
+
+            agentModal?.addEventListener('shown.bs.modal', function () {
+                activeAgentStep = 0;
+                syncAgentStepUi();
+            });
+
+            agentModal?.addEventListener('hidden.bs.modal', function () {
+                agentForm?.reset();
+            });
+
+            agentForm?.addEventListener('reset', function () {
+                activeAgentStep = 0;
+                window.setTimeout(function () {
+                    syncLocationOptions();
+                    syncAgentStepUi();
+                }, 0);
+            });
+
+            agentForm?.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter' && event.target.tagName !== 'TEXTAREA' && activeAgentStep < agentSteps.length - 1) {
+                    event.preventDefault();
+                    nextStepButton?.click();
+                }
+            });
+
+            syncAgentStepUi();
+        });
+    </script>
+@endpush
 
 @section('page-title')
     {{ __('Inventory (One-Stop Shop)') }}
@@ -203,7 +395,7 @@
                                     <th>{{ __('Category') }}</th>
                                     <th>{{ __('Unit') }}</th>
                                     <th>{{ __('Price (₦)') }}</th>
-                                    <th>{{ __('Warehouse Stock') }}</th>
+                                    <th>{{ __('Company Stock') }}</th>
                                     <th>{{ __('Status') }}</th>
                                 </tr>
                             </thead>
@@ -250,7 +442,7 @@
                                         <td>{{ number_format($sale->quantity, 2) }} {{ $sale->item?->unit }}</td>
                                         <td>₦{{ number_format($sale->total_amount ?: ($sale->quantity * $sale->unit_price), 2) }}</td>
                                         <td>
-                                            <span class="badge {{ $sale->payment_method === 'Credit' ? 'bg-danger' : ($sale->payment_method === 'Transfer' ? 'bg-primary' : 'bg-success') }} rounded-pill px-3">
+                                            <span class="badge {{ in_array($sale->payment_method, ['Credit', 'Milk Collection Balance']) ? 'bg-danger' : ($sale->payment_method === 'Transfer' ? 'bg-primary' : 'bg-success') }} rounded-pill px-3">
                                                 {{ __($sale->payment_method) }}
                                             </span>
                                         </td>
@@ -297,11 +489,16 @@
                                     <tr>
                                         <td class="fw-bold">{{ $agent->agent_code }}</td>
                                         <td>
-                                            <div>{{ $agent->user?->name ?: $agent->vender?->name ?: __('Unlinked Agent') }}</div>
-                                            <small class="text-muted">{{ $agent->assigned_warehouse ?: __('No warehouse assigned') }}</small>
+                                            <div>{{ $agent->full_name ?: ($agent->user?->name ?: $agent->vender?->name ?: __('Unlinked Agent')) }}</div>
+                                            <small class="text-muted">{{ $agent->phone_number ?: ($agent->email ?: __('No contact saved')) }}</small>
                                         </td>
                                         <td>{{ __(Str::headline(str_replace('_', ' ', $agent->agent_type))) }}</td>
-                                        <td>{{ $agent->outlet_name ?: '-' }}</td>
+                                        <td>
+                                            <div>{{ $agent->outlet_name ?: '-' }}</div>
+                                            <small class="text-muted">
+                                                {{ $agent->communityRecord?->name ?: ($agent->community ?: __('No primary community')) }}{{ !empty($agent->assigned_communities) ? ' · '.implode(', ', $agent->assigned_communities) : '' }}
+                                            </small>
+                                        </td>
                                         <td>
                                             <div>{{ $agent->credit_sales_enabled ? __('Enabled') : __('Disabled') }}</div>
                                             <small class="text-muted">₦{{ number_format($creditExposureByAgent[$agent->id] ?? 0, 2) }} / ₦{{ number_format($agent->credit_limit, 2) }}</small>
@@ -421,13 +618,13 @@
                         <h5 class="modal-title fw-bold">{{ __('Record Sale') }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
                     </div>
-                    <div class="modal-body">
+                    <div class="modal-body" style="max-height: calc(100vh - 210px); overflow-y: auto;">
                         <div class="mb-3">
                             <label class="form-label text-muted">{{ __('Selling Agent') }}</label>
                             <select class="form-select" name="agent_profile_id">
                                 <option value="">{{ __('Direct warehouse sale') }}</option>
                                 @foreach ($agentProfiles as $agent)
-                                    <option value="{{ $agent->id }}">{{ $agent->agent_code }} - {{ $agent->outlet_name ?: $agent->user?->name ?: $agent->vender?->name }}</option>
+                                    <option value="{{ $agent->id }}">{{ $agent->agent_code }} - {{ $agent->full_name ?: ($agent->outlet_name ?: $agent->user?->name ?: $agent->vender?->name) }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -470,10 +667,11 @@
                                     <option value="Cash">{{ __('Cash') }}</option>
                                     <option value="Credit">{{ __('Credit') }}</option>
                                     <option value="Transfer">{{ __('Transfer') }}</option>
+                                    <option value="Milk Collection Balance">{{ __('Milk Collection Balance') }}</option>
                                 </select>
                             </div>
                             <div class="col-6 mb-3">
-                                <label class="form-label text-muted">{{ __('Credit Due Date') }}</label>
+                                <label class="form-label text-muted">{{ __('Receivable Due Date') }}</label>
                                 <input type="date" class="form-control" name="due_date">
                             </div>
                         </div>
@@ -567,7 +765,7 @@
                             <select class="form-select" name="agent_profile_id">
                                 <option value="">{{ __('No specific agent') }}</option>
                                 @foreach ($agentProfiles as $agent)
-                                    <option value="{{ $agent->id }}">{{ $agent->agent_code }} - {{ $agent->outlet_name ?: $agent->user?->name ?: $agent->vender?->name }}</option>
+                                    <option value="{{ $agent->id }}">{{ $agent->agent_code }} - {{ $agent->full_name ?: ($agent->outlet_name ?: $agent->user?->name ?: $agent->vender?->name) }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -618,117 +816,214 @@
     </div>
 
     <div class="modal fade" id="createAgentModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
-                <form method="POST" action="{{ route('gondal.inventory.agents.store') }}">
+                <form method="POST" action="{{ route('gondal.inventory.agents.store') }}" id="createAgentForm">
                     @csrf
                     <div class="modal-header">
                         <h5 class="modal-title">{{ __('Create Agent Profile') }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">{{ __('Internal User') }}</label>
-                                <select class="form-select" name="user_id">
-                                    <option value="">{{ __('No user linked') }}</option>
-                                    @foreach ($internalUsers as $user)
-                                        <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->type }})</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">{{ __('Linked Vendor / Reseller') }}</label>
-                                <select class="form-select" name="vender_id">
-                                    <option value="">{{ __('No vendor linked') }}</option>
-                                    @foreach ($farmers as $farmer)
-                                        <option value="{{ $farmer->id }}">{{ $farmer->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
+                    <div class="modal-body" style="max-height: calc(100vh - 210px); overflow-y: auto;">
+                        <div class="d-flex flex-wrap gap-2 mb-3" id="agentWizardSteps">
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2" data-step-indicator="0">{{ __('1. Bio') }}</span>
+                            <span class="badge bg-light text-muted border px-3 py-2" data-step-indicator="1">{{ __('2. Location') }}</span>
+                            <span class="badge bg-light text-muted border px-3 py-2" data-step-indicator="2">{{ __('3. Operations') }}</span>
+                            <span class="badge bg-light text-muted border px-3 py-2" data-step-indicator="3">{{ __('4. Banking') }}</span>
                         </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">{{ __('Agent Type') }}</label>
-                                <select class="form-select" name="agent_type" required>
-                                    <option value="employee">{{ __('Employee') }}</option>
-                                    <option value="vendor">{{ __('Vendor') }}</option>
-                                    <option value="independent_reseller">{{ __('Independent Reseller') }}</option>
-                                </select>
+
+                        <div class="border rounded-3 p-3 mb-3 agent-form-step" data-step="0">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                <div class="fw-semibold text-dark">{{ __('Bio') }}</div>
+                                <small class="text-muted">{{ __('Identity and contact details') }}</small>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">{{ __('Reconciliation Frequency') }}</label>
-                                <select class="form-select" name="reconciliation_frequency" required>
-                                    <option value="daily">{{ __('Daily') }}</option>
-                                    <option value="weekly">{{ __('Weekly') }}</option>
-                                    <option value="batch">{{ __('Batch') }}</option>
-                                </select>
+                            <div class="row g-3">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">{{ __('First Name') }}</label>
+                                    <input type="text" class="form-control" name="first_name" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">{{ __('Middle Name') }}</label>
+                                    <input type="text" class="form-control" name="middle_name">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">{{ __('Last Name') }}</label>
+                                    <input type="text" class="form-control" name="last_name" required>
+                                </div>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">{{ __('Settlement Mode') }}</label>
-                                <select class="form-select" name="settlement_mode" required>
-                                    <option value="consignment">{{ __('Consignment') }}</option>
-                                    <option value="outright_purchase">{{ __('Outright Purchase') }}</option>
-                                </select>
+                            <div class="row g-3 mt-0">
+                                <div class="col-md-4">
+                                    <label class="form-label">{{ __('Gender') }}</label>
+                                    <select class="form-select" name="gender" required>
+                                        <option value="male">{{ __('Male') }}</option>
+                                        <option value="female">{{ __('Female') }}</option>
+                                        <option value="other">{{ __('Other') }}</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">{{ __('Phone Number') }}</label>
+                                    <input type="text" class="form-control" name="phone_number" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">{{ __('Email Address') }}</label>
+                                    <input type="email" class="form-control" name="email" required>
+                                </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">{{ __('Outlet Name') }}</label>
-                                <input type="text" class="form-control" name="outlet_name">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">{{ __('Assigned Warehouse') }}</label>
-                                <input type="text" class="form-control" name="assigned_warehouse" placeholder="{{ __('Main cold room / central store') }}">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">{{ __('Supervisor') }}</label>
-                                <select class="form-select" name="supervisor_user_id">
-                                    <option value="">{{ __('No supervisor') }}</option>
-                                    @foreach ($supervisors as $user)
-                                        <option value="{{ $user->id }}">{{ $user->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">{{ __('Credit Limit (₦)') }}</label>
-                                <input type="number" step="0.01" class="form-control" name="credit_limit" value="0">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">{{ __('Status') }}</label>
-                                <select class="form-select" name="status" required>
-                                    <option value="active">{{ __('Active') }}</option>
-                                    <option value="inactive">{{ __('Inactive') }}</option>
-                                    <option value="suspended">{{ __('Suspended') }}</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">{{ __('Stock Tolerance') }}</label>
-                                <input type="number" step="0.01" class="form-control" name="stock_variance_tolerance" value="0">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">{{ __('Cash Tolerance (₦)') }}</label>
-                                <input type="number" step="0.01" class="form-control" name="cash_variance_tolerance" value="0">
-                            </div>
-                            <div class="col-md-4 mb-3 d-flex align-items-end">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="credit_sales_enabled" value="1" id="creditSalesEnabled">
-                                    <label class="form-check-label" for="creditSalesEnabled">{{ __('Allow Credit Sales') }}</label>
+                            <div class="row g-3 mt-0">
+                                <div class="col-md-4">
+                                    <label class="form-label">{{ __('NIN') }}</label>
+                                    <input type="text" class="form-control" name="nin">
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label">{{ __('Internal User') }}</label>
+                                    <select class="form-select" name="user_id" required>
+                                        <option value="">{{ __('Select user') }}</option>
+                                        @foreach ($internalUsers as $user)
+                                            <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->type }})</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">{{ __('Notes') }}</label>
-                            <textarea class="form-control" name="notes" rows="3"></textarea>
+
+                        <div class="border rounded-3 p-3 mb-3 agent-form-step d-none" data-step="1">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                <div class="fw-semibold text-dark">{{ __('Location') }}</div>
+                                <small class="text-muted">{{ __('Primary posting and community coverage') }}</small>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">{{ __('State') }}</label>
+                                    <select class="form-select" id="agentState" name="state" required>
+                                        <option value="">{{ __('Select state') }}</option>
+                                        @foreach ($agentStateOptions as $state)
+                                            <option value="{{ $state }}">{{ $state }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">{{ __('LGA') }}</label>
+                                    <select class="form-select" id="agentLga" name="lga" required>
+                                        <option value="">{{ __('Select LGA') }}</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">{{ __('Community') }}</label>
+                                    <select class="form-select" id="agentCommunity" name="community" required>
+                                        <option value="">{{ __('Select community') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-0">
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ __('Residential Address') }}</label>
+                                    <textarea class="form-control" name="residential_address" rows="2" required></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ __('Permanent Address') }}</label>
+                                    <textarea class="form-control" name="permanent_address" rows="2"></textarea>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <label class="form-label">{{ __('Assigned Communities') }}</label>
+                                <select class="form-select" id="agentAssignedCommunities" name="assigned_communities[]" multiple required>
+                                </select>
+                                <small class="text-muted">{{ __('This list updates from the selected state and LGA.') }}</small>
+                            </div>
+                        </div>
+
+                        <div class="border rounded-3 p-3 mb-3 agent-form-step d-none" data-step="2">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                <div class="fw-semibold text-dark">{{ __('Operations') }}</div>
+                                <small class="text-muted">{{ __('Role, supervision, and settlement setup') }}</small>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">{{ __('Agent Type') }}</label>
+                                    <select class="form-select" name="agent_type" required>
+                                        <option value="employee">{{ __('Employee') }}</option>
+                                        <option value="farmer">{{ __('Farmer') }}</option>
+                                        <option value="independent_reseller">{{ __('Independent Reseller') }}</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">{{ __('Outlet Name') }}</label>
+                                    <input type="text" class="form-control" name="outlet_name">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">{{ __('Assigned One-Stop Shop') }}</label>
+                                    <select class="form-select" name="one_stop_shop_id" required>
+                                        <option value="">{{ __('Select one-stop shop') }}</option>
+                                        @foreach ($oneStopShops as $shop)
+                                            <option value="{{ $shop->id }}">{{ $shop->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-0">
+                                <div class="col-md-4">
+                                    <label class="form-label">{{ __('Reconciliation Frequency') }}</label>
+                                    <select class="form-select" name="reconciliation_frequency" required>
+                                        <option value="daily">{{ __('Daily') }}</option>
+                                        <option value="weekly">{{ __('Weekly') }}</option>
+                                        <option value="batch">{{ __('Batch') }}</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">{{ __('Settlement Mode') }}</label>
+                                    <select class="form-select" name="settlement_mode" required>
+                                        <option value="consignment">{{ __('Consignment') }}</option>
+                                        <option value="outright_purchase">{{ __('Outright Purchase') }}</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">{{ __('Supervisor') }}</label>
+                                    <select class="form-select" name="supervisor_user_id" required>
+                                        <option value="">{{ __('Select supervisor') }}</option>
+                                        @foreach ($supervisors as $user)
+                                            <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-0">
+                                <div class="col-md-12">
+                                    <label class="form-label">{{ __('Status') }}</label>
+                                    <select class="form-select" name="status" required>
+                                        <option value="active">{{ __('Active') }}</option>
+                                        <option value="inactive">{{ __('Inactive') }}</option>
+                                        <option value="suspended">{{ __('Suspended') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border rounded-3 p-3 agent-form-step d-none" data-step="3">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                <div class="fw-semibold text-dark">{{ __('Banking') }}</div>
+                                <small class="text-muted">{{ __('Payout account details') }}</small>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">{{ __('Account Number') }}</label>
+                                    <input type="text" class="form-control" name="account_number">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">{{ __('Account Name') }}</label>
+                                    <input type="text" class="form-control" name="account_name">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">{{ __('Bank Details') }}</label>
+                                    <input type="text" class="form-control" name="bank_details" placeholder="{{ __('Bank name, branch, or payment notes') }}">
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
-                        <button class="btn btn-primary">{{ __('Create Agent') }}</button>
+                        <button type="button" class="btn btn-outline-secondary d-none" id="agentWizardPrev">{{ __('Back') }}</button>
+                        <button type="button" class="btn btn-primary" id="agentWizardNext">{{ __('Next') }}</button>
+                        <button class="btn btn-primary d-none" id="agentWizardSubmit">{{ __('Create Agent') }}</button>
                     </div>
                 </form>
             </div>
@@ -741,23 +1036,23 @@
                 <form method="POST" action="{{ route('gondal.inventory.issues.store') }}">
                     @csrf
                     <div class="modal-header">
-                        <h5 class="modal-title">{{ __('Issue Stock to Agent') }}</h5>
+                        <h5 class="modal-title">{{ __('Issue Stock From One-Stop Shop To Agent') }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label">{{ __('Agent') }}</label>
-                            <select class="form-select" name="agent_profile_id" required>
-                                @foreach ($agentProfiles as $agent)
-                                    <option value="{{ $agent->id }}">{{ $agent->agent_code }} - {{ $agent->outlet_name ?: $agent->user?->name ?: $agent->vender?->name }}</option>
+                            <label class="form-label">{{ __('One-Stop Shop') }}</label>
+                            <select class="form-select" name="one_stop_shop_id" required>
+                                @foreach ($oneStopShops as $shop)
+                                    <option value="{{ $shop->id }}">{{ $shop->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">{{ __('Warehouse') }}</label>
-                            <select class="form-select" name="warehouse_id" required>
-                                @foreach ($warehouses as $warehouse)
-                                    <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                            <label class="form-label">{{ __('Agent') }}</label>
+                            <select class="form-select" name="agent_profile_id" required>
+                                @foreach ($agentProfiles as $agent)
+                                    <option value="{{ $agent->id }}">{{ $agent->agent_code }} - {{ $agent->full_name ?: ($agent->outlet_name ?: $agent->user?->name ?: $agent->vender?->name) }}{{ $agent->oneStopShop?->name ? ' · '.$agent->oneStopShop->name : '' }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -817,7 +1112,7 @@
                             <label class="form-label">{{ __('Agent') }}</label>
                             <select class="form-select" name="agent_profile_id" required>
                                 @foreach ($agentProfiles as $agent)
-                                    <option value="{{ $agent->id }}">{{ $agent->agent_code }} - {{ $agent->outlet_name ?: $agent->user?->name ?: $agent->vender?->name }}</option>
+                                    <option value="{{ $agent->id }}">{{ $agent->agent_code }} - {{ $agent->full_name ?: ($agent->outlet_name ?: $agent->user?->name ?: $agent->vender?->name) }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -888,7 +1183,7 @@
                             <label class="form-label">{{ __('Agent') }}</label>
                             <select class="form-select" name="agent_profile_id" required>
                                 @foreach ($agentProfiles as $agent)
-                                    <option value="{{ $agent->id }}">{{ $agent->agent_code }} - {{ $agent->outlet_name ?: $agent->user?->name ?: $agent->vender?->name }}</option>
+                                    <option value="{{ $agent->id }}">{{ $agent->agent_code }} - {{ $agent->full_name ?: ($agent->outlet_name ?: $agent->user?->name ?: $agent->vender?->name) }}</option>
                                 @endforeach
                             </select>
                         </div>

@@ -27,6 +27,11 @@ class InventoryItem extends Model
         return $this->hasMany(InventorySale::class, 'inventory_item_id');
     }
 
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(GondalOrderItem::class, 'inventory_item_id');
+    }
+
     public function credits(): HasMany
     {
         return $this->hasMany(InventoryCredit::class, 'inventory_item_id');

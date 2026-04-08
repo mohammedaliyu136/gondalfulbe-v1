@@ -5,8 +5,9 @@ namespace Modules\MilkCollection\Http\Controllers\Api;
 require_once base_path('Modules/MilkCollection/app/Models/MilkCollection.php');
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Modules\MilkCollection\Models\MilkCollection;
+use App\Services\Gondal\MilkCollectionWorkflowService;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Models\Vender;
@@ -33,12 +34,14 @@ class MilkCollectionApiController extends Controller
             foreach ($payload as $item) {
                 $validator = Validator::make($item, [
                     'mcc_id' => 'required|string',
-                    'farmer_id' => 'required|integer',
+                    'farmer_id' => 'required|integer|exists:venders,id',
                     'quantity' => 'required|numeric|min:0.01',
                     'fat_percentage' => 'nullable|numeric',
+                    'snf_percentage' => 'nullable|numeric',
                     'temperature' => 'nullable|numeric',
                     'collection_date' => 'required|date',
-                    'recorded_by' => 'required|integer'
+                    'recorded_by' => 'required|integer|exists:users,id',
+                    'adulteration_test' => 'nullable|in:passed,failed',
                 ]);
 
                 if ($validator->fails()) {
@@ -50,24 +53,21 @@ class MilkCollectionApiController extends Controller
                     continue; // Skip invalid rows
                 }
 
-                // Create the collection model
-                $collection = new MilkCollection();
-                $collection->batch_id = $item['batch_id'] ?? uniqid('SYNC-');
-                $collection->mcc_id = $item['mcc_id'];
-                $collection->farmer_id = $item['farmer_id'];
-                $collection->quantity = $item['quantity'];
-                $collection->fat_percentage = $item['fat_percentage'] ?? null;
-                $collection->temperature = $item['temperature'] ?? null;
-                $collection->collection_date = $item['collection_date'];
-                
-                // Set recorded_by (could be API user id logically, but accepting from payload for now)
-                $collection->recorded_by = $item['recorded_by'];
-                
-                if (isset($item['photo_path'])) {
-                    $collection->photo_path = $item['photo_path'];
-                }
-
-                $collection->save(); // The `booted` saving event handles grading
+                $farmer = Vender::query()->with('cooperative')->findOrFail($item['farmer_id']);
+                $actor = User::query()->findOrFail($item['recorded_by']);
+                $collection = app(MilkCollectionWorkflowService::class)->recordCollection([
+                    'batch_id' => $item['batch_id'] ?? uniqid('SYNC-'),
+                    'mcc_id' => $item['mcc_id'],
+                    'quantity' => $item['quantity'],
+                    'fat_percentage' => $item['fat_percentage'] ?? null,
+                    'snf_percentage' => $item['snf_percentage'] ?? null,
+                    'temperature' => $item['temperature'] ?? null,
+                    'collection_date' => $item['collection_date'],
+                    'recorded_by' => $item['recorded_by'],
+                    'photo_path' => $item['photo_path'] ?? null,
+                    'adulteration_test' => $item['adulteration_test'] ?? 'passed',
+                    'captured_via' => 'milkcollection_api_sync',
+                ], $farmer, $actor);
 
                 $successful[] = $collection->id;
             }

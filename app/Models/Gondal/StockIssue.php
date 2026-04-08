@@ -17,6 +17,8 @@ class StockIssue extends Model
     protected $fillable = [
         'agent_profile_id',
         'warehouse_id',
+        'one_stop_shop_id',
+        'issue_stage',
         'inventory_item_id',
         'issued_by',
         'issue_reference',
@@ -49,6 +51,11 @@ class StockIssue extends Model
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(warehouse::class, 'warehouse_id');
+    }
+
+    public function oneStopShop(): BelongsTo
+    {
+        return $this->belongsTo(OneStopShop::class, 'one_stop_shop_id');
     }
 
     public function issuer(): BelongsTo

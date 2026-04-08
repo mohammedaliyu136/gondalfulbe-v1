@@ -136,9 +136,10 @@
                                 <thead>
                                     <tr>
                                         <th>{{ __('Date') }}</th>
+                                        <th>{{ __('Agent') }}</th>
                                         <th>{{ __('Farmer') }}</th>
-                                        <th>{{ __('Officer') }}</th>
                                         <th>{{ __('Topic') }}</th>
+                                        <th>{{ __('Linked Sale') }}</th>
                                         <th>{{ __('Score') }}</th>
                                     </tr>
                                 </thead>
@@ -146,9 +147,16 @@
                                     @foreach ($visits as $visit)
                                         <tr>
                                             <td>{{ optional($visit->visit_date)->toDateString() }}</td>
+                                            <td>{{ $visit->agentProfile?->agent_code ?: '-' }}</td>
                                             <td>{{ $visit->farmer?->name ?: 'N/A' }}</td>
-                                            <td>{{ $visit->officer_name }}</td>
                                             <td>{{ $visit->topic }}</td>
+                                            <td>
+                                                @if ($visit->sale)
+                                                    {{ $visit->sale->item?->name ?: __('Drug') }} · ₦{{ number_format($visit->sale->total_amount, 2) }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
                                             <td>{{ $visit->performance_score }}</td>
                                         </tr>
                                     @endforeach
@@ -296,6 +304,14 @@
                                 <input type="date" class="form-control" name="visit_date" value="{{ now()->toDateString() }}" required>
                             </div>
                             <div class="mb-3">
+                                <label class="form-label">{{ __('Agent') }}</label>
+                                <select class="form-control" name="agent_profile_id">
+                                    @foreach ($agentProfiles as $agent)
+                                        <option value="{{ $agent->id }}">{{ $agent->agent_code }} - {{ $agent->full_name ?: ($agent->outlet_name ?: $agent->user?->name ?: $agent->vender?->name) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
                                 <label class="form-label">{{ __('Farmer') }}</label>
                                 <select class="form-control" name="farmer_id" required>
                                     @foreach ($farmers as $farmer)
@@ -314,6 +330,47 @@
                             <div class="mb-3">
                                 <label class="form-label">{{ __('Performance Score') }}</label>
                                 <input type="number" class="form-control" name="performance_score" min="0" max="100" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">{{ __('Visit Notes') }}</label>
+                                <textarea class="form-control" name="notes" rows="3" placeholder="{{ __('Treatment details, animal condition, follow-up actions.') }}"></textarea>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="record_sale" value="1" id="recordVisitSale">
+                                <label class="form-check-label" for="recordVisitSale">{{ __('Bill drugs from agent sub-store during this visit') }}</label>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ __('Drug / Supply') }}</label>
+                                    <select class="form-control" name="inventory_item_id">
+                                        <option value="">{{ __('Select product') }}</option>
+                                        @foreach ($items as $item)
+                                            <option value="{{ $item->id }}">{{ $item->name }} (₦{{ number_format($item->unit_price, 2) }})</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">{{ __('Qty') }}</label>
+                                    <input type="number" step="0.01" class="form-control" name="quantity">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">{{ __('Unit Price') }}</label>
+                                    <input type="number" step="0.01" class="form-control" name="unit_price">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ __('Payment Method') }}</label>
+                                    <select class="form-control" name="payment_method">
+                                        <option value="Cash">{{ __('Cash') }}</option>
+                                        <option value="Credit">{{ __('Credit') }}</option>
+                                        <option value="Transfer">{{ __('Transfer') }}</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ __('Credit Due Date') }}</label>
+                                    <input type="date" class="form-control" name="due_date">
+                                </div>
                             </div>
                         </div>
                         <div class="modal-footer">

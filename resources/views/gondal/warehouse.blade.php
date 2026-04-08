@@ -1,5 +1,66 @@
 @extends('layouts.admin')
 
+@push('script-page')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const locationHierarchy = @json($warehouseLocationHierarchy ?? []);
+            const stateSelect = document.getElementById('ossState');
+            const lgaSelect = document.getElementById('ossLga');
+            const communitySelect = document.getElementById('ossCommunity');
+
+            const renderOptions = (select, options, placeholder, selectedValue = '') => {
+                if (!select) {
+                    return;
+                }
+
+                select.innerHTML = '';
+
+                const placeholderOption = document.createElement('option');
+                placeholderOption.value = '';
+                placeholderOption.textContent = placeholder;
+                placeholderOption.selected = selectedValue === '';
+                select.appendChild(placeholderOption);
+
+                options.forEach((optionValue) => {
+                    const option = document.createElement('option');
+                    option.value = optionValue.value ?? optionValue;
+                    option.textContent = optionValue.label ?? optionValue;
+                    option.selected = String(option.value) === String(selectedValue);
+                    select.appendChild(option);
+                });
+            };
+
+            const syncOssLocationOptions = () => {
+                if (!stateSelect || !lgaSelect || !communitySelect) {
+                    return;
+                }
+
+                const selectedState = stateSelect.value;
+                const stateData = locationHierarchy[selectedState] || {};
+                const lgas = Object.keys(stateData);
+                const keepLga = lgas.includes(lgaSelect.value) ? lgaSelect.value : '';
+
+                renderOptions(lgaSelect, lgas, '{{ __('Select LGA') }}', keepLga);
+
+                const communities = keepLga ? (stateData[keepLga] || []) : [];
+                const communityOptions = communities.map((community) => ({
+                    value: community.id,
+                    label: community.name,
+                }));
+                const keepCommunity = communityOptions.some((community) => String(community.value) === String(communitySelect.value))
+                    ? communitySelect.value
+                    : '';
+
+                renderOptions(communitySelect, communityOptions, '{{ __('Select community') }}', keepCommunity);
+            };
+
+            stateSelect?.addEventListener('change', syncOssLocationOptions);
+            lgaSelect?.addEventListener('change', syncOssLocationOptions);
+            syncOssLocationOptions();
+        });
+    </script>
+@endpush
+
 @section('page-title', __('Warehouse'))
 
 @section('breadcrumb')
@@ -43,13 +104,16 @@
                         {{ $tab === 'registry' ? __('Warehouse Registry') : ($tab === 'stock' ? __('Warehouse Stock') : ($tab === 'outside' ? __('Stock Outside Warehouse') : __('Warehouse Dispatches'))) }}
                     </h5>
                     <p class="text-muted mb-0">
-                        {{ $tab === 'registry' ? __('Manage the real warehouses serving Gondal inventory.') : ($tab === 'stock' ? __('Load one-stop-shop inventory into a selected warehouse.') : ($tab === 'outside' ? __('Track stock already outside the warehouse, what agents still hold unsold, and what has been sold but is still waiting for approved reconciliation.') : __('Issue stock directly from a warehouse to an agent and keep inventory synchronized.'))) }}
+                        {{ $tab === 'registry' ? __('Manage the core warehouses and one-stop shops serving Gondal inventory.') : ($tab === 'stock' ? __('Load inventory into a selected warehouse.') : ($tab === 'outside' ? __('Track stock already outside the warehouse, especially what is currently held at one-stop shops.') : __('Dispatch stock from a warehouse to a one-stop shop and keep inventory synchronized.'))) }}
                     </p>
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
                     @if ($tab === 'registry')
                         <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#createWarehouseModal">
                             <i class="ti ti-plus me-1"></i>{{ __('Add Warehouse') }}
+                        </button>
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createOneStopShopModal">
+                            <i class="ti ti-building-store me-1"></i>{{ __('Add One-Stop Shop') }}
                         </button>
                     @endif
                     @if ($tab === 'stock')
@@ -93,9 +157,10 @@
                         @if ($tab === 'registry')
                             <thead class="table-light">
                                 <tr>
-                                    <th>{{ __('Warehouse') }}</th>
+                                    <th>{{ __('Location') }}</th>
+                                    <th>{{ __('Type') }}</th>
                                     <th>{{ __('Address') }}</th>
-                                    <th>{{ __('City') }}</th>
+                                    <th>{{ __('Coverage') }}</th>
                                     <th>{{ __('Tracked SKUs') }}</th>
                                     <th>{{ __('Units') }}</th>
                                 </tr>
@@ -107,10 +172,24 @@
                                     @endphp
                                     <tr>
                                         <td class="fw-bold">{{ $warehouse->name }}</td>
+                                        <td>{{ __('Warehouse') }}</td>
                                         <td>{{ $warehouse->address }}</td>
                                         <td>{{ $warehouse->city }} {{ $warehouse->city_zip }}</td>
                                         <td>{{ number_format($warehouseRows->pluck('inventory_item_id')->unique()->count()) }}</td>
                                         <td>{{ number_format((float) $warehouseRows->sum('quantity'), 2) }}</td>
+                                    </tr>
+                                @endforeach
+                                @foreach ($oneStopShops as $shop)
+                                    @php
+                                        $shopRows = $oneStopShopStocks->where('one_stop_shop_id', $shop->id);
+                                    @endphp
+                                    <tr>
+                                        <td class="fw-bold">{{ $shop->name }}</td>
+                                        <td>{{ __('One-Stop Shop') }}</td>
+                                        <td>{{ $shop->address ?: '-' }}</td>
+                                        <td>{{ $shop->community?->name ?: collect([$shop->lga, $shop->state])->filter()->implode(', ') ?: '-' }}</td>
+                                        <td>{{ number_format($shopRows->pluck('inventory_item_id')->unique()->count()) }}</td>
+                                        <td>{{ number_format((float) $shopRows->sum('quantity'), 2) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -147,13 +226,13 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>{{ __('Warehouse') }}</th>
-                                    <th>{{ __('Agent') }}</th>
+                                    <th>{{ __('One-Stop Shop') }}</th>
                                     <th>{{ __('Product') }}</th>
                                     <th>{{ __('Issued Out') }}</th>
-                                    <th>{{ __('Sold') }}</th>
-                                    <th>{{ __('Still With Agent') }}</th>
-                                    <th>{{ __('Sold Not Reconciled') }}</th>
-                                    <th>{{ __('Latest Issue') }}</th>
+                                    <th>{{ __('Transferred Out') }}</th>
+                                    <th>{{ __('Current OSS Stock') }}</th>
+                                    <th>{{ __('Pending Reconciliation') }}</th>
+                                    <th>{{ __('Latest Update') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -184,7 +263,7 @@
                                 @empty
                                     <tr>
                                         <td colspan="8" class="text-center text-muted py-4">
-                                            {{ __('No issued stock is currently sitting outside the warehouse or waiting for reconciliation.') }}
+                                            {{ __('No stock is currently held at one-stop shops.') }}
                                         </td>
                                     </tr>
                                 @endforelse
@@ -194,7 +273,7 @@
                                 <tr>
                                     <th>{{ __('Reference') }}</th>
                                     <th>{{ __('Warehouse') }}</th>
-                                    <th>{{ __('Agent') }}</th>
+                                    <th>{{ __('One-Stop Shop') }}</th>
                                     <th>{{ __('Product') }}</th>
                                     <th>{{ __('Quantity') }}</th>
                                     <th>{{ __('Issued On') }}</th>
@@ -205,7 +284,7 @@
                                     <tr>
                                         <td class="fw-bold">{{ $dispatch->issue_reference }}</td>
                                         <td>{{ $dispatch->warehouse?->name ?: '-' }}</td>
-                                        <td>{{ $dispatch->agentProfile?->outlet_name ?: $dispatch->agentProfile?->user?->name ?: $dispatch->agentProfile?->vender?->name ?: '-' }}</td>
+                                        <td>{{ $dispatch->oneStopShop?->name ?: '-' }}</td>
                                         <td>{{ $dispatch->item?->name ?: '-' }}</td>
                                         <td>{{ number_format($dispatch->quantity_issued, 2) }}</td>
                                         <td>{{ optional($dispatch->issued_on)->toDateString() }}</td>
@@ -309,7 +388,7 @@
                 <form method="POST" action="{{ route('gondal.warehouse.issues.store') }}">
                     @csrf
                     <div class="modal-header">
-                        <h5 class="modal-title">{{ __('Issue Stock From Warehouse') }}</h5>
+                        <h5 class="modal-title">{{ __('Dispatch Stock To One-Stop Shop') }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
@@ -322,10 +401,10 @@
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">{{ __('Agent') }}</label>
-                            <select class="form-select" name="agent_profile_id" required>
-                                @foreach ($agents as $agent)
-                                    <option value="{{ $agent->id }}">{{ $agent->agent_code }} - {{ $agent->outlet_name ?: $agent->user?->name ?: $agent->vender?->name }}</option>
+                            <label class="form-label">{{ __('One-Stop Shop') }}</label>
+                            <select class="form-select" name="one_stop_shop_id" required>
+                                @foreach ($oneStopShops as $shop)
+                                    <option value="{{ $shop->id }}">{{ $shop->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -364,7 +443,74 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
-                        <button class="btn btn-primary">{{ __('Issue Stock') }}</button>
+                        <button class="btn btn-primary">{{ __('Dispatch Stock') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="createOneStopShopModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('gondal.one-stop-shops.store') }}">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ __('Create One-Stop Shop') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">{{ __('Name') }}</label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ __('Linked Warehouse') }}</label>
+                            <select class="form-select" name="warehouse_id">
+                                <option value="">{{ __('Select warehouse') }}</option>
+                                @foreach ($warehouses as $warehouse)
+                                    <option value="{{ $warehouse->id }}">{{ $warehouse->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label">{{ __('State') }}</label>
+                                <select class="form-select" id="ossState" name="state">
+                                    <option value="">{{ __('Select state') }}</option>
+                                    @foreach ($warehouseStateOptions as $state)
+                                        <option value="{{ $state }}">{{ $state }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label">{{ __('LGA') }}</label>
+                                <select class="form-select" id="ossLga" name="lga">
+                                    <option value="">{{ __('Select LGA') }}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ __('Community') }}</label>
+                            <select class="form-select" id="ossCommunity" name="community_id">
+                                <option value="">{{ __('Select community') }}</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ __('Address') }}</label>
+                            <textarea class="form-control" name="address" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ __('Status') }}</label>
+                            <select class="form-select" name="status" required>
+                                <option value="active">{{ __('Active') }}</option>
+                                <option value="inactive">{{ __('Inactive') }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                        <button class="btn btn-primary">{{ __('Save One-Stop Shop') }}</button>
                     </div>
                 </form>
             </div>

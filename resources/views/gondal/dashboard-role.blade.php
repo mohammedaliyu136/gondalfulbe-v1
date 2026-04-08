@@ -23,6 +23,42 @@
         </div>
     </div>
 
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url()->current() }}" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label text-muted small fw-bold">{{ __('From Date') }}</label>
+                    <input type="date" name="from" class="form-control" value="{{ request('from') }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted small fw-bold">{{ __('To Date') }}</label>
+                    <input type="date" name="to" class="form-control" value="{{ request('to') }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted small fw-bold">{{ __('Project / Program ID') }}</label>
+                    <input type="number" name="project_id" class="form-control" placeholder="Optional" value="{{ request('project_id') }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label text-muted small fw-bold">{{ __('MCC ID') }}</label>
+                    <input type="number" name="mcc_id" class="form-control" placeholder="Optional" value="{{ request('mcc_id') }}">
+                </div>
+                <div class="col-md-12 text-end mt-3">
+                    @if(request()->hasAny(['from', 'to', 'project_id', 'mcc_id', 'status']))
+                        <a href="{{ url()->current() }}" class="btn btn-light border me-2">{{ __('Clear Filters') }}</a>
+                    @endif
+                    <button type="submit" class="btn btn-primary px-4 bg-gradient">
+                        <i class="ti ti-filter me-1"></i>{{ __('Apply Filters') }}
+                    </button>
+                    @if(request()->is('*/role/*'))
+                        <a href="{{ request()->fullUrlWithQuery(['export' => 'csv']) }}" class="btn btn-outline-success ms-2">
+                            <i class="ti ti-download me-1"></i>{{ __('Export CSV') }}
+                        </a>
+                    @endif
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="row">
         @foreach ($cards as $card)
             <div class="col-xl-3 col-md-6 mb-4">

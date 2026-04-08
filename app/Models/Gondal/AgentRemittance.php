@@ -15,6 +15,7 @@ class AgentRemittance extends Model
 
     protected $fillable = [
         'agent_profile_id',
+        'one_stop_shop_id',
         'received_by',
         'reconciliation_mode',
         'reference',
@@ -44,5 +45,10 @@ class AgentRemittance extends Model
     public function receiver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'received_by');
+    }
+
+    public function oneStopShop(): BelongsTo
+    {
+        return $this->belongsTo(OneStopShop::class, 'one_stop_shop_id');
     }
 }

@@ -13,6 +13,8 @@ class ReportService
         $from = $filters['from'] ?? null;
         $to = $filters['to'] ?? null;
         $status = $filters['status'] ?? null;
+        $projectId = $filters['project_id'] ?? null;
+        $mccId = $filters['mcc_id'] ?? null;
 
         $collections = MilkCollection::query();
         $costs = OperationCost::query();
@@ -32,6 +34,17 @@ class ReportService
 
         if ($status) {
             $requisitions->where('status', $status);
+        }
+
+        if ($projectId) {
+            $collections->where('project_id', $projectId);
+            $costs->where('project_id', $projectId);
+            $requisitions->where('project_id', $projectId);
+        }
+
+        if ($mccId) {
+            $collections->where('milk_collection_center_id', $mccId);
+            $costs->where('one_stop_shop_id', $mccId);
         }
 
         $totalCollection = (float) $collections->sum('quantity');

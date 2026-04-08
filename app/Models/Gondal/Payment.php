@@ -2,6 +2,7 @@
 
 namespace App\Models\Gondal;
 
+use App\Models\Project;
 use App\Models\Vender;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +14,7 @@ class Payment extends Model
 
     protected $table = 'gondal_payments';
 
-    protected $fillable = ['batch_id', 'farmer_id', 'amount', 'status', 'payment_date', 'gateway_reference'];
+    protected $fillable = ['batch_id', 'farmer_id', 'project_id', 'amount', 'status', 'payment_date', 'gateway_reference'];
 
     protected function casts(): array
     {
@@ -31,5 +32,10 @@ class Payment extends Model
     public function farmer(): BelongsTo
     {
         return $this->belongsTo(Vender::class, 'farmer_id');
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class, 'project_id');
     }
 }

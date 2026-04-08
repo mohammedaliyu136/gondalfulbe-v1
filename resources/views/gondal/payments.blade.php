@@ -2,6 +2,7 @@
 
 @php
     use App\Support\GondalPermissionRegistry;
+    use Illuminate\Support\Str;
 @endphp
 
 @section('page-title')
@@ -36,6 +37,10 @@
             </a>
         @endif
         @if (GondalPermissionRegistry::can(auth()->user(), 'payments', $tab, 'create'))
+            <button type="button" class="btn btn-sm btn-info me-2" data-bs-toggle="modal"
+                data-bs-target="#runSettlementModal" title="{{ __('Run Settlement Engine') }}">
+                <i class="ti ti-rocket"></i> {{ __('Run Settlement') }}
+            </button>
             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
                 data-bs-target="#createPaymentBatchModal" title="{{ $addLabel }}">
                 <i class="ti ti-plus"></i>
@@ -75,7 +80,7 @@
 
     <div class="row">
         @foreach ($overviewCards as $card)
-            <div class="col-md-3">
+            <div class="col-md-4 col-xl-3">
                 <div class="card">
                     <div class="card-body">
                         <small class="text-muted">{{ __($card['title']) }}</small>
@@ -106,20 +111,26 @@
                                 <thead>
                                     <tr>
                                         <th>{{ __('Date') }}</th>
+                                        <th>{{ __('Reference') }}</th>
+                                        <th>{{ __('Source') }}</th>
                                         <th>{{ __('Customer') }}</th>
                                         <th>{{ __('Item') }}</th>
+                                        <th>{{ __('Payment Mode') }}</th>
                                         <th>{{ __('Amount') }}</th>
                                         <th>{{ __('Status') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($reconciliationRows as $credit)
+                                    @foreach ($reconciliationRows as $row)
                                         <tr>
-                                            <td>{{ optional($credit->credit_date)->toDateString() }}</td>
-                                            <td>{{ $credit->customer_name }}</td>
-                                            <td>{{ $credit->item?->name ?: 'N/A' }}</td>
-                                            <td>₦{{ number_format($credit->amount, 2) }}</td>
-                                            <td>{{ ucfirst($credit->status) }}</td>
+                                            <td>{{ $row['date'] ?: 'N/A' }}</td>
+                                            <td>{{ $row['reference'] }}</td>
+                                            <td>{{ __($row['source']) }}</td>
+                                            <td>{{ $row['customer'] }}</td>
+                                            <td>{{ $row['item'] }}</td>
+                                            <td>{{ Str::title((string) $row['payment_mode']) }}</td>
+                                            <td>₦{{ number_format((float) $row['amount'], 2) }}</td>
+                                            <td>{{ ucfirst((string) $row['status']) }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -249,6 +260,54 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
                         <button class="btn btn-primary">{{ __('Save Batch') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="runSettlementModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('gondal.payments.settlements.store') }}">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ __('Run Farmer Settlement Engine') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">{{ __('Farmer (Vender)') }}</label>
+                            <select class="form-control" name="farmer_id" required>
+                                <option value="" disabled selected>{{ __('Select Farmer') }}</option>
+                                @foreach ($farmers as $farmer)
+                                    <option value="{{ $farmer->id }}">{{ $farmer->name }}</option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">{{ __('The engine will compute deductions exclusively for this farmer.') }}</small>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ __('Period Start') }}</label>
+                                <input type="date" class="form-control" name="period_start" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ __('Period End') }}</label>
+                                <input type="date" class="form-control" name="period_end" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ __('Max Deduction Limit (%)') }} <small>(Optional)</small></label>
+                            <input type="number" step="0.01" max="100" class="form-control" name="max_deduction_percent" placeholder="e.g. 50">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">{{ __('Payout Floor Guarantee (₦)') }} <small>(Optional)</small></label>
+                            <input type="number" step="0.01" class="form-control" name="payout_floor_amount" placeholder="e.g. 5000">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                        <button class="btn btn-info">{{ __('Ignite Engine') }}</button>
                     </div>
                 </form>
             </div>

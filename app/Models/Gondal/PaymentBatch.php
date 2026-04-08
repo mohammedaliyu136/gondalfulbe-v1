@@ -2,8 +2,10 @@
 
 namespace App\Models\Gondal;
 
+use App\Models\Project;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PaymentBatch extends Model
@@ -12,7 +14,7 @@ class PaymentBatch extends Model
 
     protected $table = 'gondal_payment_batches';
 
-    protected $fillable = ['name', 'payee_type', 'period_start', 'period_end', 'status', 'total_amount'];
+    protected $fillable = ['name', 'payee_type', 'project_id', 'period_start', 'period_end', 'status', 'total_amount'];
 
     protected function casts(): array
     {
@@ -26,5 +28,10 @@ class PaymentBatch extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class, 'batch_id');
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class, 'project_id');
     }
 }

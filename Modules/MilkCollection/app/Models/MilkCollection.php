@@ -2,6 +2,8 @@
 
 namespace Modules\MilkCollection\Models;
 
+use App\Models\Gondal\MilkQualityTest;
+use App\Models\Project;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Vender;
@@ -14,8 +16,10 @@ class MilkCollection extends Model
     protected $fillable = [
         'batch_id',
         'mcc_id',
+        'milk_collection_center_id',
         'farmer_id',
         'cooperative_id',
+        'project_id',
         'quantity',
         'fat_percentage',
         'snf_percentage',
@@ -26,24 +30,17 @@ class MilkCollection extends Model
         'recorded_by',
         'photo_path',
         'collection_date',
+        'unit_price',
+        'total_price',
+        'status',
+        'validated_by',
+        'validated_at',
     ];
 
     protected $casts = [
         'collection_date' => 'datetime',
+        'validated_at' => 'datetime',
     ];
-
-    /**
-     * The "booted" method of the model.
-     * Hooks into standard events to run auto-grade assignment rules.
-     */
-    protected static function booted()
-    {
-        parent::booted();
-
-        static::saving(function ($milk) {
-            $milk->assignQualityGrade();
-        });
-    }
 
     public function assignQualityGrade()
     {
@@ -89,5 +86,20 @@ class MilkCollection extends Model
     public function cooperative()
     {
         return $this->belongsTo(\Modules\Cooperatives\Models\Cooperative::class, 'cooperative_id', 'id');
+    }
+
+    public function collectionCenter()
+    {
+        return $this->belongsTo(MilkCollectionCenter::class, 'milk_collection_center_id', 'id');
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class, 'project_id', 'id');
+    }
+
+    public function qualityTest()
+    {
+        return $this->hasOne(MilkQualityTest::class, 'milk_collection_id', 'id');
     }
 }

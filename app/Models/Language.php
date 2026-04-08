@@ -22,7 +22,10 @@ class Language extends Model
         $cacheKey = 'language_data_' . $code;
 
         return cache()->remember($cacheKey, now()->addHours(24), function () use ($code) {
-            return Language::where('code', $code)->first();
+            return Language::where('code', $code)->first() ?? new Language([
+                'code' => $code,
+                'full_name' => ucwords(str_replace('-', ' ', $code)),
+            ]);
         });
     }
 }

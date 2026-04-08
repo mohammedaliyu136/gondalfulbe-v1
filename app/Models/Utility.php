@@ -3,32 +3,32 @@
 namespace App\Models;
 
 use App\Mail\CommonEmailTemplate;
-use App\Models\TransactionLines;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Spatie\GoogleCalendar\Event as GoogleEvent;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Twilio\Rest\Client;
-use App\Models\ReferralTransaction;
-use App\Models\ReferralSetting;
-use App\Models\User;
-use Illuminate\Support\Facades\Schema;
-use App\Models\AddTransactionLine;
 
 class Utility extends Model
 {
     // private static $settings = NULL;
     private static $getsettings = null;
+
     private static $getsettingsid = null;
+
     private static $taxsData = null;
+
     private static $taxRateData = null;
+
     private static $taxData = null;
+
     private static $taxes = null;
 
     // public static function settings(){
@@ -50,19 +50,21 @@ class Utility extends Model
             }
             self::$getsettings = $data;
         }
+
         return self::$getsettings;
     }
 
     public static function getSettingById($id)
     {
-        
+
         // if (self::$getsettingsid == null) {
-            $data = DB::table('settings');
-            $data = $data->where('created_by', '=', $id)->get();
-            if (count($data) == 0) {
-                $data = DB::table('settings')->where('created_by', '=', 1)->get();
-            }
-            self::$getsettingsid = $data;
+        $data = DB::table('settings');
+        $data = $data->where('created_by', '=', $id)->get();
+        if (count($data) == 0) {
+            $data = DB::table('settings')->where('created_by', '=', 1)->get();
+        }
+        self::$getsettingsid = $data;
+
         // }
         return self::$getsettingsid;
     }
@@ -81,117 +83,117 @@ class Utility extends Model
         }
 
         $settings = [
-            "site_currency" => "USD",
-            "site_currency_symbol" => "$",
-            "site_currency_symbol_position" => "pre",
-            "site_date_format" => "M j, Y",
-            "site_time_format" => "g:i A",
-            "timezone" => '',
-            "company_name" => "",
-            "company_address" => "",
-            "company_city" => "",
-            "company_state" => "",
-            "company_zipcode" => "",
-            "company_country" => "",
-            "company_telephone" => "",
-            "invoice_prefix" => "#INVO",
-            "journal_prefix" => "#JUR",
-            "invoice_color" => "ffffff",
-            "proposal_prefix" => "#PROP",
-            "proposal_color" => "ffffff",
-            "bill_prefix" => "#BILL",
-            "expense_prefix" => "#EXP",
-            "bill_color" => "ffffff",
-            "customer_prefix" => "#CUST",
-            "vender_prefix" => "#VEND",
-            "footer_title" => "",
-            "footer_notes" => "",
-            "invoice_template" => "template1",
-            "bill_template" => "template1",
-            "proposal_template" => "template1",
-            "qr_display" => 'on',
-            "bill_qr_display" => 'on',
-            "invoice_qr_display" => 'on',
-            "pos_purchase_qr_display" => 'on',
-            "registration_number" => "",
-            "vat_number" => "",
-            "default_language" => "en",
-            "enable_stripe" => "",
-            "enable_paypal" => "",
-            "paypal_mode" => "",
-            "paypal_client_id" => "",
-            "paypal_secret_key" => "",
-            "stripe_key" => "",
-            "stripe_secret" => "",
-            "decimal_number" => "2",
-            "tax_type" => "",
-            "shipping_display" => "on",
-            "display_landing_page" => "",
-            "employee_prefix" => "#EMP",
+            'site_currency' => 'USD',
+            'site_currency_symbol' => '$',
+            'site_currency_symbol_position' => 'pre',
+            'site_date_format' => 'M j, Y',
+            'site_time_format' => 'g:i A',
+            'timezone' => '',
+            'company_name' => '',
+            'company_address' => '',
+            'company_city' => '',
+            'company_state' => '',
+            'company_zipcode' => '',
+            'company_country' => '',
+            'company_telephone' => '',
+            'invoice_prefix' => '#INVO',
+            'journal_prefix' => '#JUR',
+            'invoice_color' => 'ffffff',
+            'proposal_prefix' => '#PROP',
+            'proposal_color' => 'ffffff',
+            'bill_prefix' => '#BILL',
+            'expense_prefix' => '#EXP',
+            'bill_color' => 'ffffff',
+            'customer_prefix' => '#CUST',
+            'vender_prefix' => '#VEND',
+            'footer_title' => '',
+            'footer_notes' => '',
+            'invoice_template' => 'template1',
+            'bill_template' => 'template1',
+            'proposal_template' => 'template1',
+            'qr_display' => 'on',
+            'bill_qr_display' => 'on',
+            'invoice_qr_display' => 'on',
+            'pos_purchase_qr_display' => 'on',
+            'registration_number' => '',
+            'vat_number' => '',
+            'default_language' => 'en',
+            'enable_stripe' => '',
+            'enable_paypal' => '',
+            'paypal_mode' => '',
+            'paypal_client_id' => '',
+            'paypal_secret_key' => '',
+            'stripe_key' => '',
+            'stripe_secret' => '',
+            'decimal_number' => '2',
+            'tax_type' => '',
+            'shipping_display' => 'on',
+            'display_landing_page' => '',
+            'employee_prefix' => '#EMP',
             'leave_status' => '1',
-            "bug_prefix" => "#ISSUE",
+            'bug_prefix' => '#ISSUE',
             'title_text' => 'ErpGo Saas',
             'footer_text' => '',
-            "company_start_time" => "09:00",
-            "company_end_time" => "18:00",
+            'company_start_time' => '09:00',
+            'company_end_time' => '18:00',
             'gdpr_cookie' => 'off',
-            "interval_time" => "",
-            "zoom_apikey" => "",
-            "zoom_apisecret" => "",
-            "slack_webhook" => "",
-            "telegram_accestoken" => "",
-            "telegram_chatid" => "",
-            "enable_signup" => "on",
-            "email_verification" => "",
+            'interval_time' => '',
+            'zoom_apikey' => '',
+            'zoom_apisecret' => '',
+            'slack_webhook' => '',
+            'telegram_accestoken' => '',
+            'telegram_chatid' => '',
+            'enable_signup' => 'on',
+            'email_verification' => '',
             'cookie_text' => 'We use cookies to ensure that we give you the best experience on our website. If you continue to use this site we will assume that you are happy with it.',
-            "company_logo_light" => "logo-light.png",
-            "company_logo_dark" => "logo-dark.png",
-            "company_favicon" => "favicon.png",
-            "cust_theme_bg" => "on",
-            "cust_darklayout" => "off",
-            "color" => "",
-            "SITE_RTL" => "off",
-            "purchase_prefix" => "#PUR",
-            "quotation_prefix" => "#QUO",
-            "quotation_color" => "ffffff",
-            "quotation_template" => "template1",
-            "quotation_color" => "ffffff",
-            "purchase_color" => "ffffff",
-            "purchase_template" => "template1",
-            "pos_color" => "ffffff",
-            "pos_template" => "template1",
-            "pos_prefix" => "#POS",
+            'company_logo_light' => 'logo-light.png',
+            'company_logo_dark' => 'logo-dark.png',
+            'company_favicon' => 'favicon.png',
+            'cust_theme_bg' => 'on',
+            'cust_darklayout' => 'off',
+            'color' => '',
+            'SITE_RTL' => 'off',
+            'purchase_prefix' => '#PUR',
+            'quotation_prefix' => '#QUO',
+            'quotation_color' => 'ffffff',
+            'quotation_template' => 'template1',
+            'quotation_color' => 'ffffff',
+            'purchase_color' => 'ffffff',
+            'purchase_template' => 'template1',
+            'pos_color' => 'ffffff',
+            'pos_template' => 'template1',
+            'pos_prefix' => '#POS',
 
-            "storage_setting" => "local",
-            "local_storage_validation" => "jpg,jpeg,png,xlsx,xls,csv,pdf",
-            "local_storage_max_upload_size" => "2048000",
-            "s3_key" => "",
-            "s3_secret" => "",
-            "s3_region" => "",
-            "s3_bucket" => "",
-            "s3_url" => "",
-            "s3_endpoint" => "",
-            "s3_max_upload_size" => "",
-            "s3_storage_validation" => "",
-            "wasabi_key" => "",
-            "wasabi_secret" => "",
-            "wasabi_region" => "",
-            "wasabi_bucket" => "",
-            "wasabi_url" => "",
-            "wasabi_root" => "",
-            "wasabi_max_upload_size" => "",
-            "wasabi_storage_validation" => "",
+            'storage_setting' => 'local',
+            'local_storage_validation' => 'jpg,jpeg,png,xlsx,xls,csv,pdf',
+            'local_storage_max_upload_size' => '2048000',
+            's3_key' => '',
+            's3_secret' => '',
+            's3_region' => '',
+            's3_bucket' => '',
+            's3_url' => '',
+            's3_endpoint' => '',
+            's3_max_upload_size' => '',
+            's3_storage_validation' => '',
+            'wasabi_key' => '',
+            'wasabi_secret' => '',
+            'wasabi_region' => '',
+            'wasabi_bucket' => '',
+            'wasabi_url' => '',
+            'wasabi_root' => '',
+            'wasabi_max_upload_size' => '',
+            'wasabi_storage_validation' => '',
 
-            "purchase_logo" => "",
-            "proposal_logo" => "",
-            "invoice_logo" => "",
-            "bill_logo" => "",
-            "pos_logo" => "",
-            "quotation_logo" => "",
-            "contract_prefix" => "#CON",
+            'purchase_logo' => '',
+            'proposal_logo' => '',
+            'invoice_logo' => '',
+            'bill_logo' => '',
+            'pos_logo' => '',
+            'quotation_logo' => '',
+            'contract_prefix' => '#CON',
 
-            "barcode_type" => "code128",
-            "barcode_format" => "css",
+            'barcode_type' => 'code128',
+            'barcode_format' => 'css',
 
             'new_user' => '1',
             'new_client' => '1',
@@ -244,8 +246,8 @@ class Utility extends Model
             'twilio_from' => '',
             'twilio_from' => '',
             'chat_gpt_key' => '',
-            'chat_gpt_model'=>'',
-            "ip_restrict" => "off",
+            'chat_gpt_model' => '',
+            'ip_restrict' => 'off',
 
             'mail_driver' => '',
             'mail_host' => '',
@@ -266,18 +268,18 @@ class Utility extends Model
             'pusher_app_secret' => '',
             'pusher_app_cluster' => '',
 
-            'color_flag'=>'false',
+            'color_flag' => 'false',
 
-            'currency_space'=>'withspace',
-            'decimal_separator'=>'dot',
-            'thousand_separator'=>'dot',
+            'currency_space' => 'withspace',
+            'decimal_separator' => 'dot',
+            'thousand_separator' => 'dot',
             'currency_symbol' => 'withcurrencysymbol',
             'float_number' => 'comma',
 
             'zkteco_api_url' => '',
             'username' => '',
             'user_password' => '',
-            'auth_token' => ''
+            'auth_token' => '',
         ];
 
         foreach ($data as $row) {
@@ -302,112 +304,112 @@ class Utility extends Model
         $data = Utility::getSettingById($user_id);
 
         $settings = [
-            "site_currency" => "USD",
-            "site_currency_symbol" => "$",
-            "site_currency_symbol_position" => "pre",
-            "site_date_format" => "M j, Y",
-            "site_time_format" => "g:i A",
-            "company_name" => "",
-            "company_address" => "",
-            "company_city" => "",
-            "company_state" => "",
-            "company_zipcode" => "",
-            "company_country" => "",
-            "company_telephone" => "",
-            "invoice_prefix" => "#INVO",
-            "invoice_color" => "ffffff",
-            "proposal_prefix" => "#PROP",
-            "proposal_color" => "ffffff",
-            "bill_prefix" => "#BILL",
-            "expense_prefix" => "#EXP",
-            "bill_color" => "ffffff",
-            "customer_prefix" => "#CUST",
-            "vender_prefix" => "#VEND",
-            "footer_title" => "",
-            "footer_notes" => "",
-            "invoice_template" => "template1",
-            "bill_template" => "template1",
-            "proposal_template" => "template1",
-            "qr_display" => 'on',
-            "bill_qr_display" => 'on',
-            "invoice_qr_display" => 'on',
-            "pos_purchase_qr_display" => 'on',
-            "registration_number" => "",
-            "vat_number" => "",
-            "default_language" => "en",
-            "enable_stripe" => "",
-            "enable_paypal" => "",
-            "paypal_mode" => "",
-            "paypal_client_id" => "",
-            "paypal_secret_key" => "",
-            "stripe_key" => "",
-            "stripe_secret" => "",
-            "decimal_number" => "2",
-            "tax_type" => "",
-            "shipping_display" => "on",
-            "journal_prefix" => "#JUR",
-            "display_landing_page" => "",
-            "employee_prefix" => "#EMP",
-            "contract_prefix" => "#CON",
+            'site_currency' => 'USD',
+            'site_currency_symbol' => '$',
+            'site_currency_symbol_position' => 'pre',
+            'site_date_format' => 'M j, Y',
+            'site_time_format' => 'g:i A',
+            'company_name' => '',
+            'company_address' => '',
+            'company_city' => '',
+            'company_state' => '',
+            'company_zipcode' => '',
+            'company_country' => '',
+            'company_telephone' => '',
+            'invoice_prefix' => '#INVO',
+            'invoice_color' => 'ffffff',
+            'proposal_prefix' => '#PROP',
+            'proposal_color' => 'ffffff',
+            'bill_prefix' => '#BILL',
+            'expense_prefix' => '#EXP',
+            'bill_color' => 'ffffff',
+            'customer_prefix' => '#CUST',
+            'vender_prefix' => '#VEND',
+            'footer_title' => '',
+            'footer_notes' => '',
+            'invoice_template' => 'template1',
+            'bill_template' => 'template1',
+            'proposal_template' => 'template1',
+            'qr_display' => 'on',
+            'bill_qr_display' => 'on',
+            'invoice_qr_display' => 'on',
+            'pos_purchase_qr_display' => 'on',
+            'registration_number' => '',
+            'vat_number' => '',
+            'default_language' => 'en',
+            'enable_stripe' => '',
+            'enable_paypal' => '',
+            'paypal_mode' => '',
+            'paypal_client_id' => '',
+            'paypal_secret_key' => '',
+            'stripe_key' => '',
+            'stripe_secret' => '',
+            'decimal_number' => '2',
+            'tax_type' => '',
+            'shipping_display' => 'on',
+            'journal_prefix' => '#JUR',
+            'display_landing_page' => '',
+            'employee_prefix' => '#EMP',
+            'contract_prefix' => '#CON',
             'leave_status' => '1',
-            "bug_prefix" => "#ISSUE",
+            'bug_prefix' => '#ISSUE',
             'title_text' => 'ErpGo Saas',
             'footer_text' => '',
-            "company_start_time" => "09:00",
-            "company_end_time" => "18:00",
+            'company_start_time' => '09:00',
+            'company_end_time' => '18:00',
             'gdpr_cookie' => 'off',
-            "interval_time" => "",
-            "zoom_apikey" => "",
-            "zoom_apisecret" => "",
-            "slack_webhook" => "",
-            "telegram_accestoken" => "",
-            "telegram_chatid" => "",
-            "enable_signup" => "on",
-            "email_verification" => "",
+            'interval_time' => '',
+            'zoom_apikey' => '',
+            'zoom_apisecret' => '',
+            'slack_webhook' => '',
+            'telegram_accestoken' => '',
+            'telegram_chatid' => '',
+            'enable_signup' => 'on',
+            'email_verification' => '',
             'cookie_text' => 'We use cookies to ensure that we give you the best experience on our website. If you continue to use this site we will assume that you are happy with it.',
-            "company_logo_light" => "logo-light.png",
-            "company_logo_dark" => "logo-dark.png",
-            "company_favicon" => "favicon.png",
-            "cust_theme_bg" => "on",
-            "cust_darklayout" => "off",
-            "color" => "",
-            "SITE_RTL" => "off",
-            "purchase_prefix" => "#PUR",
-            "purchase_color" => "ffffff",
-            "purchase_template" => "template1",
-            "proposal_logo" => "",
-            "purchase_logo" => "",
-            "invoice_logo" => "",
-            "bill_logo" => "",
-            "pos_logo" => "",
-            "quotation_prefix" => "#QUO",
-            "quotation_logo"=>'',
-            "pos_color" => "ffffff",
-            "quotation_template" => "template1",
-            "pos_template" => "template1",
+            'company_logo_light' => 'logo-light.png',
+            'company_logo_dark' => 'logo-dark.png',
+            'company_favicon' => 'favicon.png',
+            'cust_theme_bg' => 'on',
+            'cust_darklayout' => 'off',
+            'color' => '',
+            'SITE_RTL' => 'off',
+            'purchase_prefix' => '#PUR',
+            'purchase_color' => 'ffffff',
+            'purchase_template' => 'template1',
+            'proposal_logo' => '',
+            'purchase_logo' => '',
+            'invoice_logo' => '',
+            'bill_logo' => '',
+            'pos_logo' => '',
+            'quotation_prefix' => '#QUO',
+            'quotation_logo' => '',
+            'pos_color' => 'ffffff',
+            'quotation_template' => 'template1',
+            'pos_template' => 'template1',
 
-            "storage_setting" => "local",
-            "local_storage_validation" => "jpg,jpeg,png,xlsx,xls,csv,pdf",
-            "local_storage_max_upload_size" => "2048000",
-            "s3_key" => "",
-            "s3_secret" => "",
-            "s3_region" => "",
-            "s3_bucket" => "",
-            "s3_url" => "",
-            "s3_endpoint" => "",
-            "s3_max_upload_size" => "",
-            "s3_storage_validation" => "",
-            "wasabi_key" => "",
-            "wasabi_secret" => "",
-            "wasabi_region" => "",
-            "wasabi_bucket" => "",
-            "wasabi_url" => "",
-            "wasabi_root" => "",
-            "wasabi_max_upload_size" => "",
-            "wasabi_storage_validation" => "",
+            'storage_setting' => 'local',
+            'local_storage_validation' => 'jpg,jpeg,png,xlsx,xls,csv,pdf',
+            'local_storage_max_upload_size' => '2048000',
+            's3_key' => '',
+            's3_secret' => '',
+            's3_region' => '',
+            's3_bucket' => '',
+            's3_url' => '',
+            's3_endpoint' => '',
+            's3_max_upload_size' => '',
+            's3_storage_validation' => '',
+            'wasabi_key' => '',
+            'wasabi_secret' => '',
+            'wasabi_region' => '',
+            'wasabi_bucket' => '',
+            'wasabi_url' => '',
+            'wasabi_root' => '',
+            'wasabi_max_upload_size' => '',
+            'wasabi_storage_validation' => '',
 
-            "barcode_type" => "code128",
-            "barcode_format" => "css",
+            'barcode_type' => 'code128',
+            'barcode_format' => 'css',
 
             'new_user' => '1',
             'new_client' => '1',
@@ -438,7 +440,6 @@ class Utility extends Model
             'new_leave' => '1',
             'project_assign_member' => '1',
 
-
             'vat_gst_number_switch' => 'off',
             'google_calendar_enable' => 'on',
             'google_calender_json_file' => '',
@@ -461,9 +462,9 @@ class Utility extends Model
             'twilio_token' => '',
             'twilio_from' => '',
             'chat_gpt_key' => '',
-            'chat_gpt_model'=> '',
-            "ip_restrict" => "off",
-            "timezone" => '',
+            'chat_gpt_model' => '',
+            'ip_restrict' => 'off',
+            'timezone' => '',
 
             'pusher_app_id' => '',
             'pusher_app_key' => '',
@@ -479,9 +480,9 @@ class Utility extends Model
             'mail_from_address' => '',
             'mail_from_name' => '',
 
-            'currency_space'=>'withspace',
-            'decimal_separator'=>'dot',
-            'thousand_separator'=>'dot',
+            'currency_space' => 'withspace',
+            'decimal_separator' => 'dot',
+            'thousand_separator' => 'dot',
             'currency_symbol' => 'withcurrencysymbol',
         ];
 
@@ -519,23 +520,22 @@ class Utility extends Model
         'project_assign_member' => 'Project Assign Member',
     ];
 
-
     public static function languages()
     {
         if (self::$languageSetting == null) {
             $languages = Utility::langList();
 
-
             if (\Schema::hasTable('languages')) {
                 $settings = Utility::settings();
-                if (!empty($settings['disable_lang'])) {
+                if (! empty($settings['disable_lang'])) {
                     $disabledlang = explode(',', $settings['disable_lang']);
                     $languages = Language::whereNotIn('code', $disabledlang)->pluck('full_name', 'code');
                 } else {
                     $languages = Language::pluck('full_name', 'code');
                 }
-                self::$languageSetting = $languages;
             }
+
+            self::$languageSetting = $languages;
         }
 
         return self::$languageSetting;
@@ -546,9 +546,10 @@ class Utility extends Model
 
         $setting = Utility::settings();
 
-        if (!isset($setting[$key]) || empty($setting[$key])) {
+        if (! isset($setting[$key]) || empty($setting[$key])) {
             $setting[$key] = '';
         }
+
         return $setting[$key];
     }
 
@@ -562,7 +563,7 @@ class Utility extends Model
                 $endOfLinePosition = strpos($str, "\n", $keyPosition);
                 $oldLine = substr($str, $keyPosition, $endOfLinePosition - $keyPosition);
                 // If key does not exist, add it
-                if (!$keyPosition || !$endOfLinePosition || !$oldLine) {
+                if (! $keyPosition || ! $endOfLinePosition || ! $oldLine) {
                     $str .= "{$envKey}='{$envValue}'\n";
                 } else {
                     $str = str_replace($oldLine, "{$envKey}='{$envValue}'", $str);
@@ -571,7 +572,7 @@ class Utility extends Model
         }
         $str = substr($str, 0, -1);
         $str .= "\n";
-        if (!file_put_contents($envFile, $str)) {
+        if (! file_put_contents($envFile, $str)) {
             return false;
         }
 
@@ -614,16 +615,16 @@ class Utility extends Model
             '000',
         ];
         $arr['templates'] = [
-            "template1" => "New York",
-            "template2" => "Toronto",
-            "template3" => "Rio",
-            "template4" => "London",
-            "template5" => "Istanbul",
-            "template6" => "Mumbai",
-            "template7" => "Hong Kong",
-            "template8" => "Tokyo",
-            "template9" => "Sydney",
-            "template10" => "Paris",
+            'template1' => 'New York',
+            'template2' => 'Toronto',
+            'template3' => 'Rio',
+            'template4' => 'London',
+            'template5' => 'Istanbul',
+            'template6' => 'Mumbai',
+            'template7' => 'Hong Kong',
+            'template8' => 'Tokyo',
+            'template9' => 'Sydney',
+            'template10' => 'Paris',
         ];
 
         return $arr;
@@ -634,28 +635,25 @@ class Utility extends Model
         $number = explode('.', $price);
         $length = strlen(trim($number[0]));
         $float_number = isset($settings['float_number']) && $settings['float_number'] == 'dot' ? '.' : ',';
-        if($length > 3)
-        {
+        if ($length > 3) {
             $decimal_separator = $settings['decimal_separator'] == 'dot' ? ',' : ',';
             $thousand_separator = $settings['thousand_separator'] == 'dot' ? '.' : ',';
-        }
-        else
-        {
+        } else {
             $decimal_separator = $settings['decimal_separator'] == 'dot' ? '.' : ',';
             $thousand_separator = $settings['thousand_separator'] == 'dot' ? '.' : ',';
         }
-        $currency = $settings['currency_symbol'] == 'withcurrencysymbol' ? $settings['site_currency_symbol']: $settings['site_currency'];
+        $currency = $settings['currency_symbol'] == 'withcurrencysymbol' ? $settings['site_currency_symbol'] : $settings['site_currency'];
         $decimal_number = $settings['decimal_number'] ? $settings['decimal_number'] : 0;
         $currency_space = $settings['currency_space'];
         $price = number_format($price, $decimal_number, $decimal_separator, $thousand_separator);
 
         if ($float_number == 'dot') {
-            $price = preg_replace('/' . preg_quote($thousand_separator, '/') . '([^' . preg_quote($thousand_separator, '/') . ']*)$/', $float_number . '$1', $price);
+            $price = preg_replace('/'.preg_quote($thousand_separator, '/').'([^'.preg_quote($thousand_separator, '/').']*)$/', $float_number.'$1', $price);
         } else {
-            $price = preg_replace('/' . preg_quote($decimal_separator, '/') . '([^' . preg_quote($decimal_separator, '/') . ']*)$/', $float_number . '$1', $price);
+            $price = preg_replace('/'.preg_quote($decimal_separator, '/').'([^'.preg_quote($decimal_separator, '/').']*)$/', $float_number.'$1', $price);
         }
 
-        return (($settings['site_currency_symbol_position'] == "pre") ? $currency : '') . ($currency_space == 'withspace' ? ' ' : '') . $price . ($currency_space == 'withspace' ? ' ' : '') . (($settings['site_currency_symbol_position'] == "post") ? $currency : '');
+        return (($settings['site_currency_symbol_position'] == 'pre') ? $currency : '').($currency_space == 'withspace' ? ' ' : '').$price.($currency_space == 'withspace' ? ' ' : '').(($settings['site_currency_symbol_position'] == 'post') ? $currency : '');
 
     }
 
@@ -673,75 +671,78 @@ class Utility extends Model
     {
         return date($settings['site_time_format'], strtotime($time));
     }
+
     public static function purchaseNumberFormat($number)
     {
         $settings = Utility::settings();
 
-        return $settings["purchase_prefix"] . sprintf("%05d", $number);
+        return $settings['purchase_prefix'].sprintf('%05d', $number);
     }
 
     public static function quotationNumberFormat($number)
     {
         $settings = Utility::settings();
 
-        return $settings["quotation_prefix"] . sprintf("%05d", $number);
+        return $settings['quotation_prefix'].sprintf('%05d', $number);
     }
 
     public static function posNumberFormat($number)
     {
         $settings = Utility::settings();
 
-        return $settings["pos_prefix"] . sprintf("%05d", $number);
+        return $settings['pos_prefix'].sprintf('%05d', $number);
     }
 
     public static function contractNumberFormat($number)
     {
 
         $settings = self::settings();
-        return $settings["contract_prefix"] . sprintf("%05d", $number);
+
+        return $settings['contract_prefix'].sprintf('%05d', $number);
     }
 
     public static function invoiceNumberFormat($settings, $number)
     {
 
-        return $settings["invoice_prefix"] . sprintf("%05d", $number);
+        return $settings['invoice_prefix'].sprintf('%05d', $number);
     }
 
     public static function proposalNumberFormat($settings, $number)
     {
-        return $settings["proposal_prefix"] . sprintf("%05d", $number);
+        return $settings['proposal_prefix'].sprintf('%05d', $number);
     }
 
     public static function customerProposalNumberFormat($number)
     {
         $settings = Utility::settings();
 
-        return $settings["proposal_prefix"] . sprintf("%05d", $number);
+        return $settings['proposal_prefix'].sprintf('%05d', $number);
     }
 
     public static function customerInvoiceNumberFormat($number)
     {
         $settings = Utility::settings();
 
-        return $settings["invoice_prefix"] . sprintf("%05d", $number);
+        return $settings['invoice_prefix'].sprintf('%05d', $number);
     }
+
     public static function customerPosNumberFormat($number)
     {
         $settings = Utility::settings();
 
-        return $settings["pos_prefix"] . sprintf("%05d", $number);
+        return $settings['pos_prefix'].sprintf('%05d', $number);
     }
 
     public static function billNumberFormat($settings, $number)
     {
-        return $settings["bill_prefix"] . sprintf("%05d", $number);
+        return $settings['bill_prefix'].sprintf('%05d', $number);
     }
 
     public static function vendorBillNumberFormat($number)
     {
         $settings = Utility::settings();
 
-        return $settings["bill_prefix"] . sprintf("%05d", $number);
+        return $settings['bill_prefix'].sprintf('%05d', $number);
     }
 
     public static function getTax($tax)
@@ -762,12 +763,14 @@ class Utility extends Model
         foreach ($taxArr as $tax) {
             $taxes[] = Tax::find($tax);
         }
+
         // self::$taxsData = $taxes;
         // }
         return $taxes;
     }
 
     public static $rates;
+
     public static $data;
 
     public static function getTaxData()
@@ -777,21 +780,21 @@ class Utility extends Model
             $rates = Tax::get();
             self::$rates = $rates;
             foreach (self::$rates as $rate) {
-                $data[$rate->id]['id'] = $rate->id
-                ;
+                $data[$rate->id]['id'] = $rate->id;
                 $data[$rate->id]['name'] = $rate->name;
                 $data[$rate->id]['rate'] = $rate->rate;
                 $data[$rate->id]['created_by'] = $rate->created_by;
             }
             self::$data = $data;
         }
+
         return self::$data;
     }
 
     public static function taxRate($taxRate, $price, $quantity, $discount = 0)
     {
 
-//        return ($taxRate / 100) * (($price-$discount) * $quantity);
+        //        return ($taxRate / 100) * (($price-$discount) * $quantity);
         return (($price * $quantity) - $discount) * ($taxRate / 100);
     }
 
@@ -803,8 +806,9 @@ class Utility extends Model
         $taxRate = 0;
         foreach ($taxArr as $tax) {
             $tax = Tax::find($tax);
-            $taxRate += !empty($tax->rate) ? $tax->rate : 0;
+            $taxRate += ! empty($tax->rate) ? $tax->rate : 0;
         }
+
         // self::$taxRateData = $taxRate;
         // }
         return $taxRate;
@@ -819,7 +823,7 @@ class Utility extends Model
             $user = Vender::find($id);
         }
 
-        if (!empty($user)) {
+        if (! empty($user)) {
             if ($type == 'credit') {
                 $oldBalance = $user->balance;
                 $userBalance = $oldBalance + $amount;
@@ -842,7 +846,7 @@ class Utility extends Model
             $user = Vender::find($id);
         }
 
-        if (!empty($user)) {
+        if (! empty($user)) {
             if ($type == 'credit') {
                 $oldBalance = $user->balance;
                 $userBalance = $oldBalance + $amount;
@@ -879,22 +883,22 @@ class Utility extends Model
     // get font-color code accourding to bg-color
     public static function hex2rgb($hex)
     {
-        $hex = str_replace("#", "", $hex);
+        $hex = str_replace('#', '', $hex);
 
         if (strlen($hex) == 3) {
-            $r = hexdec(substr($hex, 0, 1) . substr($hex, 0, 1));
-            $g = hexdec(substr($hex, 1, 1) . substr($hex, 1, 1));
-            $b = hexdec(substr($hex, 2, 1) . substr($hex, 2, 1));
+            $r = hexdec(substr($hex, 0, 1).substr($hex, 0, 1));
+            $g = hexdec(substr($hex, 1, 1).substr($hex, 1, 1));
+            $b = hexdec(substr($hex, 2, 1).substr($hex, 2, 1));
         } else {
             $r = hexdec(substr($hex, 0, 2));
             $g = hexdec(substr($hex, 2, 2));
             $b = hexdec(substr($hex, 4, 2));
         }
-        $rgb = array(
+        $rgb = [
             $r,
             $g,
             $b,
-        );
+        ];
 
         return $rgb; // returns an array with the rgb values
     }
@@ -914,7 +918,7 @@ class Utility extends Model
             $B / 255,
         ];
 
-        for ($i = 0; $i < count($C); ++$i) {
+        for ($i = 0; $i < count($C); $i++) {
             if ($C[$i] <= 0.03928) {
                 $C[$i] = $C[$i] / 12.92;
             } else {
@@ -935,17 +939,17 @@ class Utility extends Model
 
     public static function delete_directory($dir)
     {
-        if (!file_exists($dir)) {
+        if (! file_exists($dir)) {
             return true;
         }
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             return unlink($dir);
         }
         foreach (scandir($dir) as $item) {
             if ($item == '.' || $item == '..') {
                 continue;
             }
-            if (!self::delete_directory($dir . DIRECTORY_SEPARATOR . $item)) {
+            if (! self::delete_directory($dir.DIRECTORY_SEPARATOR.$item)) {
                 return false;
             }
         }
@@ -963,40 +967,40 @@ class Utility extends Model
 
     ];
 
-    public static $chartOfAccountSubType = array(
-        "assets" => array(
+    public static $chartOfAccountSubType = [
+        'assets' => [
             '1' => 'Accounts Receivable',
             '2' => 'Current Asset',
             '3' => 'Inventory Asset',
             '4' => 'Non-current Asset',
-        ),
-        "liabilities" => array(
+        ],
+        'liabilities' => [
             '1' => 'Accounts Payable',
             '2' => 'Current Liabilities',
             '3' => 'Long Term Liabilities',
             '4' => 'Share Capital',
             '5' => 'Retained Earnings',
-        ),
-        "equity" => array(
+        ],
+        'equity' => [
             '1' => 'Owners Equity',
-        ),
-        "income" => array(
+        ],
+        'income' => [
             '1' => 'Sales Revenue',
             '2' => 'Other Revenue',
-        ),
-        "costs of goods sold" => array(
+        ],
+        'costs of goods sold' => [
             '1' => 'Costs of Goods Sold',
-        ),
-        "expenses" => array(
+        ],
+        'expenses' => [
             '1' => 'Payroll Expenses',
             '2' => 'General and Administrative expenses',
-        ),
+        ],
 
-    );
+    ];
 
     public static function chartOfAccountTypeData($company_id)
     {
-        $chartOfAccountTypes = Self::$chartOfAccountType;
+        $chartOfAccountTypes = self::$chartOfAccountType;
         foreach ($chartOfAccountTypes as $k => $type) {
 
             $accountType = ChartOfAccountType::create(
@@ -1006,7 +1010,7 @@ class Utility extends Model
                 ]
             );
 
-            $chartOfAccountSubTypes = Self::$chartOfAccountSubType;
+            $chartOfAccountSubTypes = self::$chartOfAccountSubType;
 
             foreach ($chartOfAccountSubTypes[$k] as $subType) {
                 ChartOfAccountSubType::create(
@@ -1020,7 +1024,7 @@ class Utility extends Model
         }
     }
 
-    public static $chartOfAccount = array(
+    public static $chartOfAccount = [
         [
             'code' => '1050',
             'name' => 'Accounts Receivable',
@@ -1692,9 +1696,9 @@ class Utility extends Model
             'sub_type' => 15,
         ],
 
-    );
+    ];
 
-    public static $chartOfAccount1 = array(
+    public static $chartOfAccount1 = [
         [
             'code' => '1050',
             'name' => 'Accounts Receivable',
@@ -2366,21 +2370,21 @@ class Utility extends Model
             'sub_type' => 'General and Administrative expenses',
         ],
 
-    );
+    ];
 
-// chart of account for new company
+    // chart of account for new company
     public static function chartOfAccountData1($user)
     {
-        $chartOfAccounts = Self::$chartOfAccount1;
+        $chartOfAccounts = self::$chartOfAccount1;
 
         foreach ($chartOfAccounts as $account) {
 
             $type = ChartOfAccountType::where('created_by', $user)->where('name', $account['type'])->first();
-            $sub_type = ChartOfAccountSubType::where('type', $type->id)->where('name', $account['sub_type'])->where('created_by' , $user)->first();
+            $sub_type = ChartOfAccountSubType::where('type', $type->id)->where('name', $account['sub_type'])->where('created_by', $user)->first();
 
-            $account_name = ChartOfAccount::where('type', $type->id)->where('name', $account['name'])->where('created_by' , $user)->first();
+            $account_name = ChartOfAccount::where('type', $type->id)->where('name', $account['name'])->where('created_by', $user)->first();
 
-            if(empty($account_name)) {
+            if (empty($account_name)) {
                 ChartOfAccount::create(
                     [
                         'code' => $account['code'],
@@ -2397,7 +2401,7 @@ class Utility extends Model
 
     public static function chartOfAccountData($user)
     {
-        $chartOfAccounts = Self::$chartOfAccount;
+        $chartOfAccounts = self::$chartOfAccount;
         foreach ($chartOfAccounts as $account) {
             ChartOfAccount::create(
                 [
@@ -2413,18 +2417,16 @@ class Utility extends Model
         }
     }
 
-
     public static function addNewAccountData()
     {
-        $users = User::where('type','company')->get();
+        $users = User::where('type', 'company')->get();
 
-        foreach($users as $user)
-        {
-            $chartOfAccountTypes = Self::$chartOfAccountType;
-            foreach($chartOfAccountTypes as $k => $type) {
+        foreach ($users as $user) {
+            $chartOfAccountTypes = self::$chartOfAccountType;
+            foreach ($chartOfAccountTypes as $k => $type) {
                 $check_type = ChartOfAccountType::where('created_by', $user->id)->where('name', $type)->first();
 
-                $chartOfAccountSubTypes = Self::$chartOfAccountSubType;
+                $chartOfAccountSubTypes = self::$chartOfAccountSubType;
                 foreach ($chartOfAccountSubTypes[$k] as $subType) {
                     $check_subtype = ChartOfAccountSubType::where('created_by', $user->id)->where('type', $check_type->id)->where('name', $subType)->first();
                     if (empty($check_subtype)) {
@@ -2435,23 +2437,21 @@ class Utility extends Model
                                 'created_by' => $user->id,
                             ]
                         );
-                    
-                        $chartOfAccounts = Self::$chartOfAccount1;
+
+                        $chartOfAccounts = self::$chartOfAccount1;
 
                         foreach ($chartOfAccounts as $chartAccount) {
                             $type = ChartOfAccountType::where('created_by', $user->id)->where('name', $chartAccount['type'])->first();
-                            $sub_type = ChartOfAccountSubType::where('type', $type->id)->where('name', $chartAccount['sub_type'])->where('created_by' , $user->id)->first();
-                            $check_account = ChartOfAccount::where('name', $chartAccount['name'])->where('created_by' , $user->id)->first();
+                            $sub_type = ChartOfAccountSubType::where('type', $type->id)->where('name', $chartAccount['sub_type'])->where('created_by', $user->id)->first();
+                            $check_account = ChartOfAccount::where('name', $chartAccount['name'])->where('created_by', $user->id)->first();
                             $receivableAccount = ChartOfAccount::where('created_by', $user->id)->where('type', $check_type->id)->where('name', 'Account Receivables')->first();
                             $payableAccount = ChartOfAccount::where('type', $check_type->id)->where('name', 'Account Payable')->first();
-                                if(!empty($receivableAccount))
-                                {
-                                    $receivableAccount->delete();
-                                }
-                                if(!empty($payableAccount))
-                                {
-                                    $payableAccount->delete();
-                                }
+                            if (! empty($receivableAccount)) {
+                                $receivableAccount->delete();
+                            }
+                            if (! empty($payableAccount)) {
+                                $payableAccount->delete();
+                            }
                             if (empty($check_account)) {
                                 ChartOfAccount::create(
                                     [
@@ -2464,7 +2464,7 @@ class Utility extends Model
                                     ]
                                 );
                             }
-                        }        
+                        }
                     }
                 }
             }
@@ -2480,12 +2480,12 @@ class Utility extends Model
         if ($usr->type != 'Super Admin') {
             // find template is exist or not in our record
             $template = EmailTemplate::where('name', 'LIKE', $emailTemplate)->first();
-            if (isset($template) && !empty($template)) {
+            if (isset($template) && ! empty($template)) {
                 // check template is active or not by company
                 if ($usr->type != 'super admin') {
                     $is_active = UserEmailTemplate::where('template_id', '=', $template->id)->where('user_id', '=', $usr->creatorId())->first();
                 } else {
-                    $is_active = (object) array('is_active' => 1);
+                    $is_active = (object) ['is_active' => 1];
                 }
                 if ($is_active->is_active == 1) {
 
@@ -2511,18 +2511,17 @@ class Utility extends Model
                     $content = EmailTemplateLang::where('parent_id', '=', $template->id)->where('lang', 'LIKE', $usr->lang)->first();
 
                     $content->from = $template->from;
-                    if (!empty($content->content)) {
+                    if (! empty($content->content)) {
 
                         $content->content = self::replaceVariable($content->content, $obj);
                         // send email
 
-                        try
-                        {
+                        try {
                             config(
                                 [
                                     'mail.driver' => $settings['mail_driver'] ? $settings['mail_driver'] : $setting['mail_driver'],
                                     'mail.host' => $settings['mail_host'] ? $settings['mail_host'] : $setting['mail_host'],
-                                    'mail.port' => $settings['mail_port'] ? $settings['mail_port'] :$setting['mail_port'],
+                                    'mail.port' => $settings['mail_port'] ? $settings['mail_port'] : $setting['mail_port'],
                                     'mail.encryption' => $settings['mail_encryption'] ? $settings['mail_encryption'] : $setting['mail_encryption'],
                                     'mail.username' => $settings['mail_username'] ? $settings['mail_username'] : $setting['mail_username'],
                                     'mail.password' => $settings['mail_password'] ? $settings['mail_password'] : $setting['mail_password'],
@@ -2580,7 +2579,7 @@ class Utility extends Model
 
         // find template is exist or not in our record
         $template = EmailTemplate::where('name', 'LIKE', $emailTemplate)->first();
-        if (isset($template) && !empty($template)) {
+        if (isset($template) && ! empty($template)) {
             // check template is active or not by company
 
             $is_active = UserEmailTemplate::where('template_id', '=', $template->id)->where('user_id', '=', $usr->creatorId())->first();
@@ -2592,11 +2591,10 @@ class Utility extends Model
                 // get email content language base
                 $content = EmailTemplateLang::where('parent_id', '=', $template->id)->where('lang', 'LIKE', $usr->lang)->first();
                 $content->from = $template->from;
-                if (!empty($content->content)) {
+                if (! empty($content->content)) {
                     $content->content = self::replaceVariable($content->content, $obj);
                     // send email
-                    try
-                    {
+                    try {
                         config(
                             [
                                 'mail.driver' => $settings['mail_driver'],
@@ -2929,7 +2927,7 @@ class Utility extends Model
             'task_start_date' => '',
             'task_end_date' => '',
             'invoice_payment_method' => '',
-         ];
+        ];
 
         foreach ($obj as $key => $val) {
             $arrValue[$key] = $val;
@@ -2938,9 +2936,9 @@ class Utility extends Model
         $settings = Utility::settings();
         $company_name = $settings['company_name'];
 
-        $arrValue['app_name'] = !empty($company_name) ? $company_name : env('APP_NAME');
+        $arrValue['app_name'] = ! empty($company_name) ? $company_name : env('APP_NAME');
         $arrValue['company_name'] = self::settings()['mail_from_name'];
-        $arrValue['app_url'] = '<a href="' . env('APP_URL') . '" target="_blank">' . env('APP_URL') . '</a>';
+        $arrValue['app_url'] = '<a href="'.env('APP_URL').'" target="_blank">'.env('APP_URL').'</a>';
 
         return str_replace($arrVariable, array_values($arrValue), $content);
     }
@@ -3072,7 +3070,7 @@ class Utility extends Model
     {
         $latest = Employee::where('created_by', $user_id)->latest()->first();
 
-        if (!$latest) {
+        if (! $latest) {
             return 1;
         }
 
@@ -3133,7 +3131,7 @@ class Utility extends Model
         $err = '';
 
         foreach ($errors->all() as $msg) {
-            $err .= $msg . '<br>';
+            $err .= $msg.'<br>';
         }
 
         return $err;
@@ -3142,8 +3140,8 @@ class Utility extends Model
     // get date formated
     public static function getDateFormated($date)
     {
-        if (!empty($date) && $date != '0000-00-00') {
-            return date("d M Y", strtotime($date));
+        if (! empty($date) && $date != '0000-00-00') {
+            return date('d M Y', strtotime($date));
         } else {
             return '';
         }
@@ -3209,7 +3207,7 @@ class Utility extends Model
     {
         $minutes = 0;
         foreach ($times as $time) {
-            list($hour, $minute) = explode(':', $time);
+            [$hour, $minute] = explode(':', $time);
             $minutes += $hour * 60;
             $minutes += $minute;
         }
@@ -3223,11 +3221,11 @@ class Utility extends Model
     public static function getLastSevenDays()
     {
         $arrDuration = [];
-        $previous_week = strtotime("-1 week +1 day");
+        $previous_week = strtotime('-1 week +1 day');
 
         for ($i = 0; $i < 7; $i++) {
             $arrDuration[date('Y-m-d', $previous_week)] = date('D', $previous_week);
-            $previous_week = strtotime(date('Y-m-d', $previous_week) . " +1 day");
+            $previous_week = strtotime(date('Y-m-d', $previous_week).' +1 day');
         }
 
         return $arrDuration;
@@ -3253,7 +3251,9 @@ class Utility extends Model
         if (empty($project)) {
             $settings = Utility::settings();
 
-            return (($settings['site_currency_symbol_position'] == "pre") ? $settings['site_currency_symbol'] : '') . number_format($amount, Utility::getValByName('decimal_number')) . (($settings['site_currency_symbol_position'] == "post") ? $settings['site_currency_symbol'] : '');
+            $symbol = ($settings['site_currency_symbol'] == '$') ? '₦' : $settings['site_currency_symbol'];
+
+            return (($settings['site_currency_symbol_position'] == 'pre') ? $symbol : '').number_format($amount, Utility::getValByName('decimal_number')).(($settings['site_currency_symbol_position'] == 'post') ? $symbol : '');
         }
 
     }
@@ -3420,7 +3420,7 @@ class Utility extends Model
     public static function companyData($company_id, $string)
     {
         $setting = DB::table('settings')->where('created_by', $company_id)->where('name', $string)->first();
-        if (!empty($setting)) {
+        if (! empty($setting)) {
             return $setting->value;
         } else {
             return '';
@@ -3600,7 +3600,7 @@ class Utility extends Model
         ], $gondalPermissions);
         foreach ($companyNewPermission as $op) {
             // check if permission is not assign to owner then assign.
-            if (!in_array($op, $companyPermissions)) {
+            if (! in_array($op, $companyPermissions)) {
                 $permission = Permission::findByName($op);
                 $companyRole->givePermissionTo($permission);
             }
@@ -3610,7 +3610,7 @@ class Utility extends Model
         if ($superAdminRole) {
             $superAdminPermissions = $superAdminRole->getPermissionNames()->toArray();
             foreach ($gondalPermissions as $op) {
-                if (!in_array($op, $superAdminPermissions)) {
+                if (! in_array($op, $superAdminPermissions)) {
                     $permission = Permission::findByName($op);
                     $superAdminRole->givePermissionTo($permission);
                 }
@@ -3672,30 +3672,30 @@ class Utility extends Model
         return $settings;
     }
 
-    public static function error_res($msg = "", $args = array())
+    public static function error_res($msg = '', $args = [])
     {
-        $msg = $msg == "" ? "error" : $msg;
-        $msg_id = 'error.' . $msg;
+        $msg = $msg == '' ? 'error' : $msg;
+        $msg_id = 'error.'.$msg;
         $converted = \Lang::get($msg_id, $args);
         $msg = $msg_id == $converted ? $msg : $converted;
-        $json = array(
+        $json = [
             'flag' => 0,
             'msg' => $msg,
-        );
+        ];
 
         return $json;
     }
 
-    public static function success_res($msg = "", $args = array())
+    public static function success_res($msg = '', $args = [])
     {
-        $msg = $msg == "" ? "success" : $msg;
-        $msg_id = 'success.' . $msg;
+        $msg = $msg == '' ? 'success' : $msg;
+        $msg_id = 'success.'.$msg;
         $converted = \Lang::get($msg_id, $args);
         $msg = $msg_id == $converted ? $msg : $converted;
-        $json = array(
+        $json = [
             'flag' => 1,
             'msg' => $msg,
-        );
+        ];
 
         return $json;
     }
@@ -3703,8 +3703,8 @@ class Utility extends Model
     public static function get_messenger_packages_migration()
     {
         $totalMigration = 0;
-        $messengerPath = glob(base_path() . '/vendor/munafio/chatify/src/database/migrations' . DIRECTORY_SEPARATOR . '*.php');
-        if (!empty($messengerPath)) {
+        $messengerPath = glob(base_path().'/vendor/munafio/chatify/src/database/migrations'.DIRECTORY_SEPARATOR.'*.php');
+        if (! empty($messengerPath)) {
             $messengerMigration = str_replace('.php', '', $messengerPath);
             $totalMigration = count($messengerMigration);
         }
@@ -3716,7 +3716,7 @@ class Utility extends Model
     public static function getselectedThemeColor()
     {
         $color = env('THEME_COLOR');
-        if ($color == "" || $color == null) {
+        if ($color == '' || $color == null) {
             $color = 'blue';
         }
 
@@ -3753,6 +3753,7 @@ class Utility extends Model
         $start = new Carbon($start);
         $end = new Carbon($end);
         $totalDuration = $start->diffInSeconds($end);
+
         return $totalDuration;
     }
 
@@ -3762,7 +3763,7 @@ class Utility extends Model
         $i = ($seconds / 60) % 60;
         $s = $seconds % 60;
 
-        $time = sprintf("%02d:%02d:%02d", $H, $i, $s);
+        $time = sprintf('%02d:%02d:%02d', $H, $i, $s);
 
         return $time;
     }
@@ -3773,8 +3774,8 @@ class Utility extends Model
 
         $notification_template = NotificationTemplates::where('slug', $slug)->first();
 
-        if (!empty($notification_template) && !empty($obj)) {
-            if (!empty($user_id)) {
+        if (! empty($notification_template) && ! empty($obj)) {
+            if (! empty($user_id)) {
                 $user = User::find($user_id);
             } else {
                 $user = \Auth::user();
@@ -3787,7 +3788,7 @@ class Utility extends Model
             if (empty($curr_noti_tempLang)) {
                 $curr_noti_tempLang = NotificationTemplateLangs::where('parent_id', '=', $notification_template->id)->where('lang', 'en')->first();
             }
-            if (!empty($curr_noti_tempLang) && !empty($curr_noti_tempLang->content)) {
+            if (! empty($curr_noti_tempLang) && ! empty($curr_noti_tempLang->content)) {
                 $msg = self::replaceVariable($curr_noti_tempLang->content, $obj);
             }
         }
@@ -3795,20 +3796,20 @@ class Utility extends Model
         if (isset($msg)) {
             $settings = Utility::settingsById($user->id);
             try {
-                if (isset($settings['slack_webhook']) && !empty($settings['slack_webhook'])) {
+                if (isset($settings['slack_webhook']) && ! empty($settings['slack_webhook'])) {
                     $ch = curl_init();
                     curl_setopt($ch, CURLOPT_URL, $settings['slack_webhook']);
                     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                     curl_setopt($ch, CURLOPT_POST, 1);
                     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(['text' => $msg]));
 
-                    $headers = array();
+                    $headers = [];
                     $headers[] = 'Content-Type: application/json';
                     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
                     $result = curl_exec($ch);
                     if (curl_errno($ch)) {
-                        echo 'Error:' . curl_error($ch);
+                        echo 'Error:'.curl_error($ch);
                     }
                     curl_close($ch);
                 }
@@ -3822,8 +3823,8 @@ class Utility extends Model
     {
         $notification_template = NotificationTemplates::where('slug', $slug)->first();
 
-        if (!empty($notification_template) && !empty($obj)) {
-            if (!empty($user_id)) {
+        if (! empty($notification_template) && ! empty($obj)) {
+            if (! empty($user_id)) {
                 $user = User::find($user_id);
             } else {
                 $user = \Auth::user();
@@ -3836,7 +3837,7 @@ class Utility extends Model
             if (empty($curr_noti_tempLang)) {
                 $curr_noti_tempLang = NotificationTemplateLangs::where('parent_id', '=', $notification_template->id)->where('lang', 'en')->first();
             }
-            if (!empty($curr_noti_tempLang) && !empty($curr_noti_tempLang->content)) {
+            if (! empty($curr_noti_tempLang) && ! empty($curr_noti_tempLang->content)) {
                 $msg = self::replaceVariable($curr_noti_tempLang->content, $obj);
             }
         }
@@ -3844,23 +3845,23 @@ class Utility extends Model
         if (isset($msg)) {
             $settings = Utility::settingsById($user->id);
             try {
-                if (isset($settings['telegram_accestoken']) && !empty($settings['telegram_accestoken'])) {
+                if (isset($settings['telegram_accestoken']) && ! empty($settings['telegram_accestoken'])) {
                     // Set your Bot ID and Chat ID.
                     $telegrambot = $settings['telegram_accestoken'];
                     $telegramchatid = $settings['telegram_chatid'];
                     // Function call with your own text or variable
-                    $url = 'https://api.telegram.org/bot' . $telegrambot . '/sendMessage';
-                    $data = array(
+                    $url = 'https://api.telegram.org/bot'.$telegrambot.'/sendMessage';
+                    $data = [
                         'chat_id' => $telegramchatid,
                         'text' => $msg,
-                    );
-                    $options = array(
-                        'http' => array(
+                    ];
+                    $options = [
+                        'http' => [
                             'method' => 'POST',
                             'header' => "Content-Type:application/x-www-form-urlencoded\r\n",
                             'content' => http_build_query($data),
-                        ),
-                    );
+                        ],
+                    ];
                     $context = stream_context_create($options);
                     $result = file_get_contents($url, false, $context);
                     $url = $url;
@@ -3877,8 +3878,8 @@ class Utility extends Model
 
         $notification_template = NotificationTemplates::where('slug', $slug)->first();
 
-        if (!empty($notification_template) && !empty($obj)) {
-            if (!empty($user_id)) {
+        if (! empty($notification_template) && ! empty($obj)) {
+            if (! empty($user_id)) {
                 $user = User::find($user_id);
             } else {
                 $user = \Auth::user();
@@ -3891,11 +3892,10 @@ class Utility extends Model
             if (empty($curr_noti_tempLang)) {
                 $curr_noti_tempLang = NotificationTemplateLangs::where('parent_id', '=', $notification_template->id)->where('lang', 'en')->first();
             }
-            if (!empty($curr_noti_tempLang) && !empty($curr_noti_tempLang->content)) {
+            if (! empty($curr_noti_tempLang) && ! empty($curr_noti_tempLang->content)) {
                 $msg = self::replaceVariable($curr_noti_tempLang->content, $obj);
             }
         }
-
 
         if (isset($msg)) {
             $settings = Utility::settingsById($user->id);
@@ -3937,7 +3937,7 @@ class Utility extends Model
     {
         $product = WarehouseProduct::where('warehouse_id', $warehouse_id)->where('product_id', $product_id)->first();
 
-        $pro_quantity = (!empty($product) && !empty($product->quantity)) ? $product->quantity : 0;
+        $pro_quantity = (! empty($product) && ! empty($product->quantity)) ? $product->quantity : 0;
 
         if ($type == 'minus') {
             $product->quantity = $pro_quantity != 0 ? $pro_quantity - $quantity : $quantity;
@@ -3955,7 +3955,7 @@ class Utility extends Model
         $toWarehouse = WarehouseProduct::where('warehouse_id', $to_warehouse)->where('product_id', $product_id)->first();
         if (empty($toWarehouse)) {
             if ($delete != 'delete') {
-                $transfer = new WarehouseProduct();
+                $transfer = new WarehouseProduct;
                 $transfer->warehouse_id = $to_warehouse;
                 $transfer->product_id = $product_id;
                 $transfer->quantity = $quantity;
@@ -3967,7 +3967,7 @@ class Utility extends Model
             $toWarehouse->save();
         }
         $fromWarehouse = WarehouseProduct::where('warehouse_id', $from_warehouse)->where('product_id', $product_id)->first();
-        if (!empty($fromWarehouse)) {
+        if (! empty($fromWarehouse)) {
             $fromWarehouse->quantity = ($fromWarehouse->quantity) - ($quantity);
             if ($fromWarehouse->quantity <= 0) {
                 $fromWarehouse->delete();
@@ -3982,7 +3982,7 @@ class Utility extends Model
     public static function addProductStock($product_id, $quantity, $type, $description, $type_id)
     {
 
-        $stocks = new StockReport();
+        $stocks = new StockReport;
         $stocks->product_id = $product_id;
         $stocks->quantity = $quantity;
         $stocks->type = $type;
@@ -4010,13 +4010,14 @@ class Utility extends Model
         }
 
         $settings = [
-            "cust_darklayout" => "off",
-            "cust_theme_bg" => "on",
-            "color" => '',
+            'cust_darklayout' => 'off',
+            'cust_theme_bg' => 'on',
+            'color' => '',
         ];
         foreach ($data as $row) {
             $settings[$row->name] = $row->value;
         }
+
         return $settings;
     }
 
@@ -4033,10 +4034,12 @@ class Utility extends Model
             }
         } else {
             $user = User::where('type', 'super admin')->first();
-            $setting = DB::table('settings')->where('created_by', $user->id)->pluck('value', 'name')->toArray();
+            $setting = $user
+                ? DB::table('settings')->where('created_by', $user->id)->pluck('value', 'name')->toArray()
+                : [];
         }
 
-        if (!isset($setting['color'])) {
+        if (! isset($setting['color'])) {
             $setting = Utility::settings();
         }
 
@@ -4050,6 +4053,7 @@ class Utility extends Model
         foreach ($data as $row) {
             $settings[$row->name] = $row->value;
         }
+
         return $settings;
     }
 
@@ -4057,7 +4061,7 @@ class Utility extends Model
     {
         $is_dark_mode = self::getValByName('cust_darklayout');
         $setting = DB::table('settings')->where('created_by', Auth::user()->id)->pluck('value', 'name')->toArray();
-        if (!empty($setting['cust_darklayout'])) {
+        if (! empty($setting['cust_darklayout'])) {
             $is_dark_mode = $setting['cust_darklayout'];
             if ($is_dark_mode == 'on') {
                 return 'logo-light.png';
@@ -4103,21 +4107,23 @@ class Utility extends Model
         }
         $data = $data->get();
         $settings = [
-            "gdpr_cookie" => "",
-            "cookie_text" => "",
+            'gdpr_cookie' => '',
+            'cookie_text' => '',
         ];
         foreach ($data as $row) {
             $settings[$row->name] = $row->value;
         }
+
         return $settings;
     }
 
     public static function getValByName1($key)
     {
         $setting = Utility::getGdpr();
-        if (!isset($setting[$key]) || empty($setting[$key])) {
+        if (! isset($setting[$key]) || empty($setting[$key])) {
             $setting[$key] = '';
         }
+
         return $setting[$key];
     }
 
@@ -4136,8 +4142,7 @@ class Utility extends Model
 
         $data = WarehouseProduct::updateOrCreate(
             ['warehouse_id' => $warehouse_id, 'product_id' => $product_id, 'created_by' => \Auth::user()->id],
-            ['warehouse_id' => $warehouse_id, 'product_id' => $product_id, 'quantity' => $product_quantity, 'created_by' => \Auth::user()->id])
-        ;
+            ['warehouse_id' => $warehouse_id, 'product_id' => $product_id, 'quantity' => $product_quantity, 'created_by' => \Auth::user()->id]);
 
     }
 
@@ -4145,11 +4150,11 @@ class Utility extends Model
     {
 
         if ($type == 'invoice') {
-            $data = DB::table('settings')->where('created_by', \Auth::user()->creatorId())->where('name', 'invoice_starting_number')->update(array('value' => $id));
+            $data = DB::table('settings')->where('created_by', \Auth::user()->creatorId())->where('name', 'invoice_starting_number')->update(['value' => $id]);
         } elseif ($type == 'proposal') {
-            $data = DB::table('settings')->where('created_by', \Auth::user()->creatorId())->where('name', 'proposal_starting_number')->update(array('value' => $id));
+            $data = DB::table('settings')->where('created_by', \Auth::user()->creatorId())->where('name', 'proposal_starting_number')->update(['value' => $id]);
         } elseif ($type == 'bill') {
-            $data = DB::table('settings')->where('created_by', \Auth::user()->creatorId())->where('name', 'bill_starting_number')->update(array('value' => $id));
+            $data = DB::table('settings')->where('created_by', \Auth::user()->creatorId())->where('name', 'bill_starting_number')->update(['value' => $id]);
         }
 
         return $data;
@@ -4162,7 +4167,7 @@ class Utility extends Model
         try {
             $settings = Utility::getStorageSetting();
 
-            if (!empty($settings['storage_setting'])) {
+            if (! empty($settings['storage_setting'])) {
 
                 if ($settings['storage_setting'] == 'wasabi') {
 
@@ -4172,14 +4177,14 @@ class Utility extends Model
                             'filesystems.disks.wasabi.secret' => $settings['wasabi_secret'],
                             'filesystems.disks.wasabi.region' => $settings['wasabi_region'],
                             'filesystems.disks.wasabi.bucket' => $settings['wasabi_bucket'],
-                            'filesystems.disks.wasabi.endpoint' => 'https://s3.' . $settings['wasabi_region'] . '.wasabisys.com',
+                            'filesystems.disks.wasabi.endpoint' => 'https://s3.'.$settings['wasabi_region'].'.wasabisys.com',
                         ]
                     );
 
-                    $max_size = !empty($settings['wasabi_max_upload_size']) ? $settings['wasabi_max_upload_size'] : '2048';
-                    $mimes = !empty($settings['wasabi_storage_validation']) ? $settings['wasabi_storage_validation'] : '';
+                    $max_size = ! empty($settings['wasabi_max_upload_size']) ? $settings['wasabi_max_upload_size'] : '2048';
+                    $mimes = ! empty($settings['wasabi_storage_validation']) ? $settings['wasabi_storage_validation'] : '';
 
-                } else if ($settings['storage_setting'] == 's3') {
+                } elseif ($settings['storage_setting'] == 's3') {
                     config(
                         [
                             'filesystems.disks.s3.key' => $settings['s3_key'],
@@ -4189,14 +4194,14 @@ class Utility extends Model
                             'filesystems.disks.s3.use_path_style_endpoint' => false,
                         ]
                     );
-                    $max_size = !empty($settings['s3_max_upload_size']) ? $settings['s3_max_upload_size'] : '2048';
-                    $mimes = !empty($settings['s3_storage_validation']) ? $settings['s3_storage_validation'] : '';
+                    $max_size = ! empty($settings['s3_max_upload_size']) ? $settings['s3_max_upload_size'] : '2048';
+                    $mimes = ! empty($settings['s3_storage_validation']) ? $settings['s3_storage_validation'] : '';
 
                 } else {
 
-                    $max_size = !empty($settings['local_storage_max_upload_size']) ? $settings['local_storage_max_upload_size'] : '20480000000';
+                    $max_size = ! empty($settings['local_storage_max_upload_size']) ? $settings['local_storage_max_upload_size'] : '20480000000';
 
-                    $mimes = !empty($settings['local_storage_validation']) ? $settings['local_storage_validation'] : '';
+                    $mimes = ! empty($settings['local_storage_validation']) ? $settings['local_storage_validation'] : '';
                 }
 
                 $file = $request->$key_name;
@@ -4207,8 +4212,8 @@ class Utility extends Model
                 } else {
 
                     $validation = [
-                        'mimes:' . $mimes,
-                        'max:' . $max_size,
+                        'mimes:'.$mimes,
+                        'max:'.$max_size,
                     ];
 
                 }
@@ -4230,15 +4235,15 @@ class Utility extends Model
                     $name = $name;
 
                     if ($settings['storage_setting'] == 'local') {
-                        $localPath = storage_path('app/public/' . trim($path, '/'));
+                        $localPath = storage_path('app/public/'.trim($path, '/'));
 
-                        if (!file_exists($localPath)) {
+                        if (! file_exists($localPath)) {
                             mkdir($localPath, 0777, true);
                         }
 
                         $request->$key_name->move($localPath, $name);
-                        $path = $path . $name;
-                    } else if ($settings['storage_setting'] == 'wasabi') {
+                        $path = $path.$name;
+                    } elseif ($settings['storage_setting'] == 'wasabi') {
 
                         $path = \Storage::disk('wasabi')->putFileAs(
                             $path,
@@ -4248,7 +4253,7 @@ class Utility extends Model
 
                         // $path = $path.$name;
 
-                    } else if ($settings['storage_setting'] == 's3') {
+                    } elseif ($settings['storage_setting'] == 's3') {
 
                         $path = \Storage::disk('s3')->putFileAs(
                             $path,
@@ -4263,6 +4268,7 @@ class Utility extends Model
                         'msg' => 'success',
                         'url' => $path,
                     ];
+
                     return $res;
                 }
 
@@ -4271,6 +4277,7 @@ class Utility extends Model
                     'flag' => 0,
                     'msg' => __('Please set proper configuration for storage.'),
                 ];
+
                 return $res;
             }
 
@@ -4280,6 +4287,7 @@ class Utility extends Model
                 'flag' => 0,
                 'msg' => $e->getMessage(),
             ];
+
             return $res;
         }
     }
@@ -4292,7 +4300,7 @@ class Utility extends Model
         try {
             $settings = Utility::getStorageSetting();
 
-            if (!empty($settings['storage_setting'])) {
+            if (! empty($settings['storage_setting'])) {
 
                 if ($settings['storage_setting'] == 'wasabi') {
 
@@ -4302,14 +4310,14 @@ class Utility extends Model
                             'filesystems.disks.wasabi.secret' => $settings['wasabi_secret'],
                             'filesystems.disks.wasabi.region' => $settings['wasabi_region'],
                             'filesystems.disks.wasabi.bucket' => $settings['wasabi_bucket'],
-                            'filesystems.disks.wasabi.endpoint' => 'https://s3.' . $settings['wasabi_region'] . '.wasabisys.com',
+                            'filesystems.disks.wasabi.endpoint' => 'https://s3.'.$settings['wasabi_region'].'.wasabisys.com',
                         ]
                     );
 
-                    $max_size = !empty($settings['wasabi_max_upload_size']) ? $settings['wasabi_max_upload_size'] : '2048';
-                    $mimes = !empty($settings['wasabi_storage_validation']) ? $settings['wasabi_storage_validation'] : '';
+                    $max_size = ! empty($settings['wasabi_max_upload_size']) ? $settings['wasabi_max_upload_size'] : '2048';
+                    $mimes = ! empty($settings['wasabi_storage_validation']) ? $settings['wasabi_storage_validation'] : '';
 
-                } else if ($settings['storage_setting'] == 's3') {
+                } elseif ($settings['storage_setting'] == 's3') {
                     config(
                         [
                             'filesystems.disks.s3.key' => $settings['s3_key'],
@@ -4319,13 +4327,13 @@ class Utility extends Model
                             'filesystems.disks.s3.use_path_style_endpoint' => false,
                         ]
                     );
-                    $max_size = !empty($settings['s3_max_upload_size']) ? $settings['s3_max_upload_size'] : '2048';
-                    $mimes = !empty($settings['s3_storage_validation']) ? $settings['s3_storage_validation'] : '';
+                    $max_size = ! empty($settings['s3_max_upload_size']) ? $settings['s3_max_upload_size'] : '2048';
+                    $mimes = ! empty($settings['s3_storage_validation']) ? $settings['s3_storage_validation'] : '';
 
                 } else {
-                    $max_size = !empty($settings['local_storage_max_upload_size']) ? $settings['local_storage_max_upload_size'] : '2048';
+                    $max_size = ! empty($settings['local_storage_max_upload_size']) ? $settings['local_storage_max_upload_size'] : '2048';
 
-                    $mimes = !empty($settings['local_storage_validation']) ? $settings['local_storage_validation'] : '';
+                    $mimes = ! empty($settings['local_storage_validation']) ? $settings['local_storage_validation'] : '';
                 }
 
                 $file = $request->$key_name;
@@ -4335,8 +4343,8 @@ class Utility extends Model
                 } else {
 
                     $validation = [
-                        'mimes:' . $mimes,
-                        'max:' . $max_size,
+                        'mimes:'.$mimes,
+                        'max:'.$max_size,
                     ];
 
                 }
@@ -4349,6 +4357,7 @@ class Utility extends Model
                         'flag' => 0,
                         'msg' => $validator->messages()->first(),
                     ];
+
                     return $res;
                 } else {
 
@@ -4363,7 +4372,7 @@ class Utility extends Model
                         );
 
                         $path = $name;
-                    } else if ($settings['storage_setting'] == 'wasabi') {
+                    } elseif ($settings['storage_setting'] == 'wasabi') {
 
                         $path = \Storage::disk('wasabi')->putFileAs(
                             $path,
@@ -4373,7 +4382,7 @@ class Utility extends Model
 
                         // $path = $path.$name;
 
-                    } else if ($settings['storage_setting'] == 's3') {
+                    } elseif ($settings['storage_setting'] == 's3') {
 
                         $path = \Storage::disk('s3')->putFileAs(
                             $path,
@@ -4388,6 +4397,7 @@ class Utility extends Model
                         'msg' => 'success',
                         'url' => $path,
                     ];
+
                     return $res;
                 }
 
@@ -4396,6 +4406,7 @@ class Utility extends Model
                     'flag' => 0,
                     'msg' => __('Please set proper configuration for storage.'),
                 ];
+
                 return $res;
             }
 
@@ -4404,6 +4415,7 @@ class Utility extends Model
                 'flag' => 0,
                 'msg' => $e->getMessage(),
             ];
+
             return $res;
         }
     }
@@ -4420,7 +4432,7 @@ class Utility extends Model
                         'filesystems.disks.wasabi.secret' => $settings['wasabi_secret'],
                         'filesystems.disks.wasabi.region' => $settings['wasabi_region'],
                         'filesystems.disks.wasabi.bucket' => $settings['wasabi_bucket'],
-                        'filesystems.disks.wasabi.endpoint' => 'https://s3.' . $settings['wasabi_region'] . '.wasabisys.com',
+                        'filesystems.disks.wasabi.endpoint' => 'https://s3.'.$settings['wasabi_region'].'.wasabisys.com',
                     ]
                 );
             } elseif ($settings['storage_setting'] == 's3') {
@@ -4447,30 +4459,31 @@ class Utility extends Model
         $data = $data->where('created_by', '=', 1);
         $data = $data->get();
         $settings = [
-            "storage_setting" => "local",
-            "local_storage_validation" => "jpg,jpeg,png,xlsx,xls,csv,pdf",
-            "local_storage_max_upload_size" => "2048000",
-            "s3_key" => "",
-            "s3_secret" => "",
-            "s3_region" => "",
-            "s3_bucket" => "",
-            "s3_url" => "",
-            "s3_endpoint" => "",
-            "s3_max_upload_size" => "",
-            "s3_storage_validation" => "",
-            "wasabi_key" => "",
-            "wasabi_secret" => "",
-            "wasabi_region" => "",
-            "wasabi_bucket" => "",
-            "wasabi_url" => "",
-            "wasabi_root" => "",
-            "wasabi_max_upload_size" => "",
-            "wasabi_storage_validation" => "",
+            'storage_setting' => 'local',
+            'local_storage_validation' => 'jpg,jpeg,png,xlsx,xls,csv,pdf',
+            'local_storage_max_upload_size' => '2048000',
+            's3_key' => '',
+            's3_secret' => '',
+            's3_region' => '',
+            's3_bucket' => '',
+            's3_url' => '',
+            's3_endpoint' => '',
+            's3_max_upload_size' => '',
+            's3_storage_validation' => '',
+            'wasabi_key' => '',
+            'wasabi_secret' => '',
+            'wasabi_region' => '',
+            'wasabi_bucket' => '',
+            'wasabi_url' => '',
+            'wasabi_root' => '',
+            'wasabi_max_upload_size' => '',
+            'wasabi_storage_validation' => '',
 
         ];
         foreach ($data as $row) {
             $settings[$row->name] = $row->value;
         }
+
         return $settings;
     }
 
@@ -4483,7 +4496,7 @@ class Utility extends Model
         if (self::$getRatingData == null) {
             $indicator = Indicator::where('designation', $designationid)->first();
 
-            if (!empty($indicator->rating) && ($competencyCount != 0)) {
+            if (! empty($indicator->rating) && ($competencyCount != 0)) {
                 $rating = json_decode($indicator->rating, true);
                 $starsum = array_sum($rating);
 
@@ -4565,34 +4578,34 @@ class Utility extends Model
 
     public static function addCalendarData($request, $type)
     {
-        Self::googleCalendarConfig();
-        $event = new GoogleEvent();
+        self::googleCalendarConfig();
+        $event = new GoogleEvent;
         $event->name = $request->title;
         $event->startDateTime = Carbon::parse($request->start_date);
         $event->endDateTime = Carbon::parse($request->end_date);
-        $event->colorId = Self::colorCodeData($type);
+        $event->colorId = self::colorCodeData($type);
         $event->save();
     }
 
     public static function getCalendarData($type)
     {
-        Self::googleCalendarConfig();
+        self::googleCalendarConfig();
         $data = GoogleEvent::get();
 
-        $type = Self::colorCodeData($type);
+        $type = self::colorCodeData($type);
         $arrayJson = [];
         foreach ($data as $val) {
             $end_date = date_create($val->endDateTime);
-            date_add($end_date, date_interval_create_from_date_string("1 days"));
+            date_add($end_date, date_interval_create_from_date_string('1 days'));
             if ($val->colorId == "$type") {
 
                 $arrayJson[] = [
-                    "id" => $val->id,
-                    "title" => $val->summary,
-                    "start" => $val->startDateTime,
-                    "end" => date_format($end_date, "Y-m-d H:i:s"),
-                    "className" => Self::$colorCode[$type],
-                    "allDay" => true,
+                    'id' => $val->id,
+                    'title' => $val->summary,
+                    'start' => $val->startDateTime,
+                    'end' => date_format($end_date, 'Y-m-d H:i:s'),
+                    'className' => self::$colorCode[$type],
+                    'allDay' => true,
 
                 ];
             }
@@ -4614,13 +4627,13 @@ class Utility extends Model
 
     public static function webhookSetting($module, $user_id = null)
     {
-        if (!empty($user_id)) {
+        if (! empty($user_id)) {
             $user = User::find($user_id);
         } else {
             $user = \Auth::user();
         }
         $webhook = WebhookSetting::where('module', $module)->where('created_by', '=', $user->id)->first();
-        if (!empty($webhook)) {
+        if (! empty($webhook)) {
             $url = $webhook->url;
             $method = $webhook->method;
             $reference_url = "https://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
@@ -4628,14 +4641,16 @@ class Utility extends Model
             $data['method'] = $method;
             $data['reference_url'] = $reference_url;
             $data['url'] = $url;
+
             return $data;
         }
+
         return false;
     }
 
     public static function WebhookCall($url = null, $parameter = null, $method = 'POST')
     {
-        if (!empty($url) && !empty($parameter)) {
+        if (! empty($url) && ! empty($parameter)) {
             try {
 
                 $curlHandle = curl_init($url);
@@ -4678,6 +4693,7 @@ class Utility extends Model
         foreach ($data as $row) {
             $settings[$row->name] = $row->value;
         }
+
         return $settings;
     }
 
@@ -4709,12 +4725,14 @@ class Utility extends Model
         if ($plan->storage_limit <= $total_storage && $plan->storage_limit != -1) {
 
             $error = __('Plan storage limit is over so please upgrade the plan.');
+
             return $error;
         } else {
             $user->storage_limit = $total_storage;
         }
 
         $user->save();
+
         return 1;
 
     }
@@ -4768,29 +4786,31 @@ class Utility extends Model
             'tr' => '🇹🇷 tr',
             'pt-br' => '🇵🇹 pt-br',
         ];
+
         return $arr;
     }
 
     public static function langList()
     {
         $languages = [
-            "ar" => "Arabic",
-            "zh" => "Chinese",
-            "da" => "Danish",
-            "de" => "German",
-            "en" => "English",
-            "es" => "Spanish",
-            "fr" => "French",
-            "he" => "Hebrew",
-            "it" => "Italian",
-            "ja" => "Japanese",
-            "nl" => "Dutch",
-            "pl" => "Polish",
-            "pt" => "Portuguese",
-            "ru" => "Russian",
-            "tr" => "Turkish",
-            "pt-br" => "Portuguese (Brazil)",
+            'ar' => 'Arabic',
+            'zh' => 'Chinese',
+            'da' => 'Danish',
+            'de' => 'German',
+            'en' => 'English',
+            'es' => 'Spanish',
+            'fr' => 'French',
+            'he' => 'Hebrew',
+            'it' => 'Italian',
+            'ja' => 'Japanese',
+            'nl' => 'Dutch',
+            'pl' => 'Polish',
+            'pt' => 'Portuguese',
+            'ru' => 'Russian',
+            'tr' => 'Turkish',
+            'pt-br' => 'Portuguese (Brazil)',
         ];
+
         return $languages;
     }
 
@@ -4801,7 +4821,7 @@ class Utility extends Model
         foreach ($languages as $key => $lang) {
             $languageExist = Language::where('code', $key)->first();
             if (empty($languageExist)) {
-                $language = new Language();
+                $language = new Language;
                 $language->code = $key;
                 $language->full_name = $lang;
                 $language->save();
@@ -4820,6 +4840,7 @@ class Utility extends Model
         foreach ($data as $row) {
             $settings[$row->name] = $row->value;
         }
+
         return $settings;
     }
 
@@ -4835,7 +4856,7 @@ class Utility extends Model
     public static function getAccountBalance($account_id, $start_date = null, $end_date = null)
     {
 
-        if (!empty($start_date) && !empty($end_date)) {
+        if (! empty($start_date) && ! empty($end_date)) {
             $start = $start_date;
             $end = $end_date;
         } else {
@@ -4843,10 +4864,8 @@ class Utility extends Model
             $end = date('Y-m-t');
         }
 
-
         // foreach ($types as $type) {
-        $total = AddTransactionLine::
-            select('chart_of_accounts.id', 'chart_of_accounts.code', 'chart_of_accounts.name',
+        $total = AddTransactionLine::select('chart_of_accounts.id', 'chart_of_accounts.code', 'chart_of_accounts.name',
             \DB::raw('sum(debit) as totalDebit'),
             \DB::raw('sum(credit) as totalCredit'));
         $total->leftjoin('chart_of_accounts', 'add_transaction_lines.account_id', 'chart_of_accounts.id');
@@ -4878,7 +4897,7 @@ class Utility extends Model
     public static function getAccountData($account_id, $start_date = null, $end_date = null)
     {
 
-        if (!empty($start_date) && !empty($end_date)) {
+        if (! empty($start_date) && ! empty($end_date)) {
             $start = $start_date;
             $end = $end_date;
         } else {
@@ -4918,15 +4937,13 @@ class Utility extends Model
                 'bill_vendor.name as bill_vendor_name',
                 'payment_vendor.name as payment_vendor_name',
                 'chart_of_accounts.name as account_name',
-                DB::raw("COALESCE(invoice_customer.name, revenue_customer.name,bill_vendor.name,payment_vendor.name) as user_name"),
+                DB::raw('COALESCE(invoice_customer.name, revenue_customer.name,bill_vendor.name,payment_vendor.name) as user_name'),
             )->get();
-
 
         return $transactionData;
 
     }
     //end for chartOfAccount data show
-
 
     public static function smtpDetail($user_id)
     {
@@ -4963,74 +4980,71 @@ class Utility extends Model
         }
     }
 
-    public static function addOnlinePaymentData($payment , $invoice , $payment_type)
+    public static function addOnlinePaymentData($payment, $invoice, $payment_type)
     {
-        $account = BankAccount::where('created_by' , $invoice->created_by)->where('payment_name',$payment_type)->first();
+        $account = BankAccount::where('created_by', $invoice->created_by)->where('payment_name', $payment_type)->first();
 
         $get_account = ChartOfAccount::find($account->chart_account_id);
 
         $data = [
-            'account_id'         => !empty($get_account)? $get_account->id : 0,
-            'transaction_type'   => 'debit',
+            'account_id' => ! empty($get_account) ? $get_account->id : 0,
+            'transaction_type' => 'debit',
             'transaction_amount' => $payment->amount,
-            'reference'          => 'Invoice Payment',
-            'reference_id'       => $invoice->id,
-            'reference_sub_id'   => $payment->id,
-            'date'               => $payment->date,
-            'created_by'         => $invoice->created_by
+            'reference' => 'Invoice Payment',
+            'reference_id' => $invoice->id,
+            'reference_sub_id' => $payment->id,
+            'date' => $payment->date,
+            'created_by' => $invoice->created_by,
         ];
         self::addTransactionLines($data);
 
-        $account = ChartOfAccount::where('name','Accounts Receivable')->where('created_by' , $invoice->created_by)->first();
-        $data    = [
-            'account_id'         => !empty($account) ? $account->id : 0,
-            'transaction_type'   => 'credit',
+        $account = ChartOfAccount::where('name', 'Accounts Receivable')->where('created_by', $invoice->created_by)->first();
+        $data = [
+            'account_id' => ! empty($account) ? $account->id : 0,
+            'transaction_type' => 'credit',
             'transaction_amount' => $payment->amount,
-            'reference'          => 'Invoice Payment',
-            'reference_id'       => $invoice->id,
-            'reference_sub_id'   => $payment->id,
-            'date'               => $payment->date,
-            'created_by'         => $invoice->created_by
+            'reference' => 'Invoice Payment',
+            'reference_id' => $invoice->id,
+            'reference_sub_id' => $payment->id,
+            'date' => $payment->date,
+            'created_by' => $invoice->created_by,
         ];
         self::addTransactionLines($data);
     }
 
-    public static function addTransactionLines($data , $action = '' , $type = '')    
+    public static function addTransactionLines($data, $action = '', $type = '')
     {
-        if($type == 'notes')
-        {
+        if ($type == 'notes') {
             $existingTransaction = AddTransactionLine::where('reference', $data['reference'])
-            ->where('reference_id', $data['reference_id'])
-            ->where('reference_sub_id', $data['reference_sub_id'])
-            ->first();
-        }
-        else
-        {
+                ->where('reference_id', $data['reference_id'])
+                ->where('reference_sub_id', $data['reference_sub_id'])
+                ->first();
+        } else {
             $existingTransaction = AddTransactionLine::where('account_id', $data['account_id'])
                 ->where('reference', $data['reference'])
                 ->where('reference_id', $data['reference_id'])
                 ->where('reference_sub_id', $data['reference_sub_id'])
                 ->first();
         }
-        
+
         if ($existingTransaction && $action == 'edit') {
             $transactionLines = $existingTransaction;
         } else {
-            $transactionLines = new  AddTransactionLine();
+            $transactionLines = new AddTransactionLine;
         }
 
-        $transactionLines->account_id       = $data['account_id'];
-        $transactionLines->reference        = $data['reference'];
-        $transactionLines->reference_id     = $data['reference_id'];
+        $transactionLines->account_id = $data['account_id'];
+        $transactionLines->reference = $data['reference'];
+        $transactionLines->reference_id = $data['reference_id'];
         $transactionLines->reference_sub_id = $data['reference_sub_id'];
-        $transactionLines->date             = $data['date'];
+        $transactionLines->date = $data['date'];
 
-        if ($data['transaction_type'] == "credit") {
+        if ($data['transaction_type'] == 'credit') {
             $transactionLines->credit = $data['transaction_amount'];
-            $transactionLines->debit  = 0;
+            $transactionLines->debit = 0;
         } else {
             $transactionLines->credit = 0;
-            $transactionLines->debit  = $data['transaction_amount'];
+            $transactionLines->debit = $data['transaction_amount'];
         }
 
         $transactionLines->created_by = $data['created_by'] ?? \Auth::user()->creatorId();
@@ -5038,6 +5052,7 @@ class Utility extends Model
     }
 
     public static $invoiceProductsData = null;
+
     public static $billProductsData = null;
 
     public static function getInvoiceProductsData($fromDate, $toDate)
@@ -5062,6 +5077,7 @@ class Utility extends Model
 
             $InvoiceProducts->map(function ($invoice) {
                 $invoice->total = $invoice->sub_total + $invoice->tax_values - $invoice->total_discount;
+
                 return $invoice;
             });
 
@@ -5098,6 +5114,7 @@ class Utility extends Model
 
             $BillProducts->map(function ($bill) {
                 $bill->total = $bill->sub_total + $bill->acc_price + $bill->tax_values - $bill->total_discount;
+
                 return $bill;
             });
 
@@ -5140,12 +5157,13 @@ class Utility extends Model
             }
 
             $billdata = [
-                "category" => $category,
-                "data" => $billchartArr,
+                'category' => $category,
+                'data' => $billchartArr,
             ];
 
             $billsum[] = $billdata;
         }
+
         return $billsum;
     }
 
@@ -5178,8 +5196,8 @@ class Utility extends Model
         }
 
         $chartdata = [
-            "category" => $category,
-            "data" => $chartArr,
+            'category' => $category,
+            'data' => $chartArr,
         ];
 
         return $chartdata;
@@ -5264,6 +5282,7 @@ class Utility extends Model
                 }
             }
         }
+
         return $totalArr;
     }
 
@@ -5595,7 +5614,7 @@ class Utility extends Model
         $email = EmailTemplate::all();
 
         foreach ($email as $e) {
-            foreach ($defaultTemplate[$e->slug]['lang'] as  $content) {
+            foreach ($defaultTemplate[$e->slug]['lang'] as $content) {
                 $emailNoti = EmailTemplateLang::where('parent_id', $e->id)->where('lang', $lang)->count();
                 if ($emailNoti == 0) {
                     EmailTemplateLang::create(
@@ -5611,24 +5630,20 @@ class Utility extends Model
         }
     }
 
-    public static function referralTransaction($plan , $company= '')
+    public static function referralTransaction($plan, $company = '')
     {
-        if($company != '')
-        {
+        if ($company != '') {
             $objUser = $company;
-        }
-        else
-        {
+        } else {
             $objUser = \Auth::user();
         }
 
-        $user = ReferralTransaction::where('company_id',$objUser->id)->first();
+        $user = ReferralTransaction::where('company_id', $objUser->id)->first();
 
-        $referralSetting = ReferralSetting::where('created_by' , 1)->first();
+        $referralSetting = ReferralSetting::where('created_by', 1)->first();
 
-        if($objUser->used_referral_code != 0 && $user == null && (isset($referralSetting) && $referralSetting->is_enable == 1))
-        {
-            $transaction         = new ReferralTransaction();
+        if ($objUser->used_referral_code != 0 && $user == null && (isset($referralSetting) && $referralSetting->is_enable == 1)) {
+            $transaction = new ReferralTransaction;
             $transaction->company_id = $objUser->id;
             $transaction->plan_id = $plan->id;
             $transaction->plan_price = $plan->price;
@@ -5636,8 +5651,8 @@ class Utility extends Model
             $transaction->referral_code = $objUser->used_referral_code;
             $transaction->save();
 
-            $commissionAmount  = ($plan->price * $referralSetting->percentage)/100;
-            $user = User::where('referral_code' , $objUser->used_referral_code)->first();
+            $commissionAmount = ($plan->price * $referralSetting->percentage) / 100;
+            $user = User::where('referral_code', $objUser->used_referral_code)->first();
 
             $user->commission_amount = $user->commission_amount + $commissionAmount;
             $user->save();
@@ -5648,27 +5663,29 @@ class Utility extends Model
     {
         try {
             $settings = Utility::getStorageSetting();
-            if (!empty($settings['storage_setting'])) {
+            if (! empty($settings['storage_setting'])) {
                 if ($settings['storage_setting'] == 'wasabi') {
-                    $max_size = !empty($settings['wasabi_max_upload_size']) ? $settings['wasabi_max_upload_size'] : '2048';
-                    $mimes =  !empty($settings['wasabi_storage_validation']) ? $settings['wasabi_storage_validation'] : '';
-                } else if ($settings['storage_setting'] == 's3') {
-                    $max_size = !empty($settings['s3_max_upload_size']) ? $settings['s3_max_upload_size'] : '2048';
-                    $mimes =  !empty($settings['s3_storage_validation']) ? $settings['s3_storage_validation'] : '';
+                    $max_size = ! empty($settings['wasabi_max_upload_size']) ? $settings['wasabi_max_upload_size'] : '2048';
+                    $mimes = ! empty($settings['wasabi_storage_validation']) ? $settings['wasabi_storage_validation'] : '';
+                } elseif ($settings['storage_setting'] == 's3') {
+                    $max_size = ! empty($settings['s3_max_upload_size']) ? $settings['s3_max_upload_size'] : '2048';
+                    $mimes = ! empty($settings['s3_storage_validation']) ? $settings['s3_storage_validation'] : '';
                 } else {
-                    $max_size = !empty($settings['local_storage_max_upload_size']) ? $settings['local_storage_max_upload_size'] : '2048';
-                    $mimes =  !empty($settings['local_storage_validation']) ? $settings['local_storage_validation'] : '';
+                    $max_size = ! empty($settings['local_storage_max_upload_size']) ? $settings['local_storage_max_upload_size'] : '2048';
+                    $mimes = ! empty($settings['local_storage_validation']) ? $settings['local_storage_validation'] : '';
                 }
-                    $res = [
-                        'types'  => $mimes,
-                        'max_size'  => $max_size,
-                    ];
-                    return $res;
+                $res = [
+                    'types' => $mimes,
+                    'max_size' => $max_size,
+                ];
+
+                return $res;
             } else {
                 $res = [
                     'flag' => 0,
                     'msg' => __('Please set proper configuration for storage.'),
                 ];
+
                 return $res;
             }
         } catch (\Exception $e) {
@@ -5676,6 +5693,7 @@ class Utility extends Model
                 'flag' => 0,
                 'msg' => $e->getMessage(),
             ];
+
             return $res;
         }
     }
@@ -5697,10 +5715,10 @@ class Utility extends Model
             //     }
             // } else {
             //     // If you pass table name
-                // $table = $input;
+            // $table = $input;
             // }
 
-            if(Schema::hasTable($input)){
+            if (Schema::hasTable($input)) {
                 $tableFields = Schema::getColumnListing($input);
             } else {
                 return [

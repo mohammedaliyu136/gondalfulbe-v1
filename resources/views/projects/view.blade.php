@@ -220,7 +220,29 @@
     </div>
 @endsection
 @section('content')
-<div class="row">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 bg-light">
+                <div class="card-body py-3">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="text-muted text-xs text-uppercase">{{ __('Partner / NGO') }}</div>
+                            <div class="fw-semibold">{{ $project->client?->name ?: '—' }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-muted text-xs text-uppercase">{{ __('Assigned Agents') }}</div>
+                            <div class="fw-semibold">{{ $project->agent_profiles_count ?? 0 }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-muted text-xs text-uppercase">{{ __('Gondal Use') }}</div>
+                            <div class="fw-semibold">{{ __('Use this project to group farmer and independent reseller agents.') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
     <div class="col-md-4 col-sm-6 col-12 leave-card mb-4">
         <div class="leave-card-inner d-flex align-items-center gap-3">
              <svg class="bottom-svg" width="135" height="80" viewBox="0 0 135 80" fill="none"

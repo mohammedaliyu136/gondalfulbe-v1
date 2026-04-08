@@ -826,11 +826,12 @@
                         $agriculturalModules = [
                             ['route' => 'vender.index', 'active' => request()->routeIs('vender.*'), 'icon' => 'ti-users', 'label' => 'Farmers', 'permission' => 'manage vender'],
                             ['route' => 'cooperatives.index', 'active' => request()->routeIs('cooperatives.*'), 'icon' => 'ti-building', 'label' => 'Cooperatives', 'permission' => 'manage vender'],
-                            ['route' => 'milkcollection.index', 'active' => request()->routeIs('milkcollection.*'), 'icon' => 'ti-droplet', 'label' => 'Milk Collections', 'permission' => 'manage vender'],
+                            ['route' => 'gondal.milk-collection', 'active' => request()->routeIs('gondal.milk-collection*'), 'icon' => 'ti-droplet', 'label' => 'Milk Collections', 'module' => 'milk-collection'],
                             ['route' => 'gondal.logistics', 'active' => request()->routeIs('gondal.logistics*'), 'icon' => 'ti-road-sign', 'label' => 'Logistics', 'module' => 'logistics'],
                             ['route' => 'gondal.operations', 'active' => request()->routeIs('gondal.operations*'), 'icon' => 'ti-adjustments', 'label' => 'Operations', 'module' => 'operations'],
                             ['route' => 'gondal.requisitions', 'active' => request()->routeIs('gondal.requisitions*'), 'icon' => 'ti-subtask', 'label' => 'Requisitions', 'module' => 'requisitions'],
                             ['route' => 'gondal.payments', 'active' => request()->routeIs('gondal.payments*'), 'icon' => 'ti-coin', 'label' => 'Payments', 'module' => 'payments'],
+                            ['route' => 'gondal.accounting', 'active' => request()->routeIs('gondal.accounting*'), 'icon' => 'ti-file-invoice', 'label' => 'Accounting', 'module' => 'payments'],
                             ['route' => 'gondal.inventory', 'active' => request()->routeIs('gondal.inventory*'), 'icon' => 'ti-box', 'label' => 'Inventory', 'module' => 'inventory'],
                             ['route' => 'gondal.warehouse', 'active' => request()->routeIs('gondal.warehouse*'), 'icon' => 'ti-building-warehouse', 'label' => 'Warehouse', 'module' => 'warehouse-ops'],
                             ['route' => 'gondal.extension', 'active' => request()->routeIs('gondal.extension*'), 'icon' => 'ti-graduation-cap', 'label' => 'Extension', 'module' => 'extension'],
@@ -1272,7 +1273,7 @@
 
                 <!--------------------- Start User Managaement System ----------------------------------->
 
-                @if (\Auth::user()->type != 'super admin' && (Gate::check('manage user') || Gate::check('manage role') || Gate::check('manage client')))
+                @if ((\Auth::user()->type != 'super admin' && (Gate::check('manage user') || Gate::check('manage role') || Gate::check('manage client'))) || \Auth::user()->type == 'super admin')
                     <li
                         class="dash-item dash-hasmenu {{ Request::segment(1) == 'users' ||
                         Request::segment(1) == 'roles' ||

@@ -2,8 +2,15 @@
 
 namespace App\Providers;
 
+use App\Models\Gondal\AgentProfile;
+use App\Models\Project;
+use App\Models\Vender;
+use App\Policies\AgentProfilePolicy;
+use App\Policies\MilkCollectionPolicy;
+use App\Policies\ProjectPolicy;
+use App\Policies\VenderPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Gate;
+use Modules\MilkCollection\Models\MilkCollection;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -13,7 +20,10 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        // 'App\Models\Model' => 'App\Policies\ModelPolicy',
+        Project::class => ProjectPolicy::class,
+        AgentProfile::class => AgentProfilePolicy::class,
+        Vender::class => VenderPolicy::class,
+        MilkCollection::class => MilkCollectionPolicy::class,
     ];
 
     /**

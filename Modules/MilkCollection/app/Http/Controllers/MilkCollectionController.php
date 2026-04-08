@@ -4,6 +4,7 @@ namespace Modules\MilkCollection\Http\Controllers;
 
 require_once base_path('Modules/MilkCollection/app/Models/MilkCollection.php');
 
+use App\Services\Gondal\MilkCollectionWorkflowService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -97,18 +98,17 @@ class MilkCollectionController extends Controller
                 return redirect()->back()->with('error', $messages->first());
             }
 
-            $collection = new \Modules\MilkCollection\Models\MilkCollection();
-            $collection->mcc_id = $request->mcc_id;
-            $collection->farmer_id = $request->farmer_id;
-            $collection->quantity = $request->quantity;
-            $collection->fat_percentage = $request->fat_percentage;
-            $collection->temperature = $request->temperature;
-            $collection->collection_date = $request->collection_date;
-            $collection->recorded_by = \Auth::user()->id;
-            $collection->batch_id = 'WEB-' . date('YmdHis');
-
-            // Grade is auto-assigned on Model boot/saving
-            $collection->save();
+            $farmer = \App\Models\Vender::query()->with('cooperative')->findOrFail($request->farmer_id);
+            $collection = app(MilkCollectionWorkflowService::class)->recordCollection([
+                'batch_id' => 'WEB-' . date('YmdHis'),
+                'mcc_id' => $request->mcc_id,
+                'quantity' => $request->quantity,
+                'fat_percentage' => $request->fat_percentage,
+                'temperature' => $request->temperature,
+                'collection_date' => $request->collection_date,
+                'recorded_by' => \Auth::user()->id,
+                'captured_via' => 'milkcollection_web',
+            ], $farmer, \Auth::user());
 
             // Notify if Grade C
             if ($collection->quality_grade === 'C') {
